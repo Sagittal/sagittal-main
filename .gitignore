@@ -5,3 +5,6 @@ log
 tmp
 .DS_Store
 bash.exe.stackdump
+
+# Wiki build research corpus — internal working notes, not for publication
+wiki-research/
