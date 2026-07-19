@@ -362,6 +362,65 @@
   $("den").value = "1"; fire($("den"));
   ok("recovers after a bad ratio", $("error-msg").hidden);
 
+  // ---------- prime factor ----------
+  const pfCard = $("pf-card");
+  ok("prime factor section head present",
+    [...document.querySelectorAll(".section-head")]
+      .some((h) => h.textContent.trim() === "Prime Factor"));
+  ok("prime factor card is a collapsed level card",
+    Boolean(pfCard) && pfCard.classList.contains("level") && !pfCard.open);
+  ok("sixteen symbol tiles",
+    document.querySelectorAll("#pf-strip .pf-tile").length === 16,
+    document.querySelectorAll("#pf-strip .pf-tile").length);
+  ok("tiles teach their Sagispeak names",
+    /^pao — /.test(document.querySelector('#pf-strip [data-prime="5"]').dataset.tip),
+    document.querySelector('#pf-strip [data-prime="5"]').dataset.tip.slice(0, 30));
+  ok("collapsed preview shows the bare tonic notehead",
+    pfCard.querySelector(".lv-preview .pv-gl").textContent === SAG_DATA.noteheads.D);
+  pfCard.querySelector("summary").click();
+  ok("summary click opens the card", pfCard.open);
+  const pfHeads = [...document.querySelectorAll("#pf-table thead th")]
+    .map((t) => t.textContent.replace(/\s+/g, " ").trim());
+  ok("spelling table shows the four notation forms",
+    pfHeads.join("|") === "Bravura|Sagitype|Unicode|Codepoints", pfHeads.join("|"));
+  const pfAscii = () => document.querySelector("#pf-table tbody td.mono .cv").textContent;
+  expInput(5).value = "1"; fire(expInput(5));   // 5/4 over D
+  ok("5/4 over D spells F sharp with the 5-comma down", pfAscii() === "\\!#F", pfAscii());
+  ok("the 5 tile lights up with its exponent",
+    document.querySelector('#pf-strip [data-prime="5"]').classList.contains("on")
+    && document.querySelector('#pf-strip [data-prime="5"] .pf-tile-e').textContent === "+1");
+  ok("other tiles stay dark",
+    document.querySelectorAll("#pf-strip .pf-tile.on").length === 1);
+  const pfRows = () => [...document.querySelectorAll("#pf-factors tbody tr")];
+  ok("factor rows: the prime and the total", pfRows().length === 2, pfRows().length);
+  ok("the factor row shifts four fifths",
+    pfRows()[0].lastElementChild.querySelector(".cv").textContent === "+4",
+    pfRows()[0].lastElementChild.textContent);
+  ok("the reconciliation lands on the pitch",
+    /386\.314/.test($("pf-recon").textContent), $("pf-recon").textContent);
+  expInput(41).value = "1"; fire(expInput(41));  // 5 and 41 together
+  ok("an accented symbol keeps its mina accent",
+    pfAscii() === ",/| \\! #A", pfAscii());
+  expInput(41).value = "0"; fire(expInput(41));
+  expInput(5).value = "0"; fire(expInput(5));
+  $("num").value = "67"; $("den").value = "64"; fire($("num"));
+  ok("a prime past 61 explains itself",
+    !$("pf-note").hidden && /61/.test($("pf-note").textContent),
+    $("pf-note").textContent);
+  ok("no spelling is shown for it", $("pf-result").style.display === "none");
+  $("num").value = "1"; $("den").value = "1"; fire($("num"));
+  expInput(7).value = "1"; fire(expInput(7));   // 7/4 over D
+  const pfCp = document.querySelector("#pf-table td.cp");
+  pfCp.querySelector("button.copy").click();
+  ok("spelling cells copy",
+    copied === pfCp.querySelector(".cv").textContent, JSON.stringify(copied));
+  expInput(7).value = "0"; fire(expInput(7));
+  $("den").value = "0"; fire($("den"));
+  ok("an input error hides the prime factor card", pfCard.style.display === "none");
+  $("den").value = "1"; fire($("den"));
+  ok("recovering restores it", pfCard.style.display !== "none");
+  pfCard.querySelector("summary").click();
+
   const div = document.createElement("div");
   div.id = "TESTOUT";
   div.textContent = out.join("\n");

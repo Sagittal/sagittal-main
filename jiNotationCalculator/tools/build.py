@@ -4,12 +4,13 @@ Writes:
   index.html            a complete standalone document
   dist/artifact.html    body-only flavor, for hosts that supply the skeleton
 """
-from paths import CORE, DATA_JS, DIST, FONT_B64, INDEX, TEMPLATE
+from paths import CORE, DATA_JS, DIST, FONT_B64, INDEX, PRIME_FACTOR, TEMPLATE
 
 body = TEMPLATE.read_text(encoding="utf-8")
 body = body.replace("%%FONT_B64%%", FONT_B64.read_text(encoding="utf-8").strip())
 body = body.replace("%%DATA_JS%%", DATA_JS.read_text(encoding="utf-8").strip())
 body = body.replace("%%CORE_JS%%", CORE.read_text(encoding="utf-8").strip())
+body = body.replace("%%PRIME_FACTOR_JS%%", PRIME_FACTOR.read_text(encoding="utf-8").strip())
 
 DIST.mkdir(exist_ok=True)
 (DIST / "artifact.html").write_text(body, encoding="utf-8")

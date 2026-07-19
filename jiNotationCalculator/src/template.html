@@ -482,6 +482,51 @@
   }
   .dg-readout b { color: var(--ink); font-weight: 600; }
 
+  /* ---------- prime factor ---------- */
+  #pf-card { margin-top: 12px; }
+  .pf-body { display: flex; flex-direction: column; gap: 16px; padding: 14px 20px 18px; }
+  .pf-body .field-label { margin-bottom: 8px; }
+  #pf-result { display: flex; flex-direction: column; gap: 12px; }
+  /* header help stays quiet until hovered, as in the level tables */
+  #pf-table th .tip, #pf-factors th .tip { border-bottom: none; }
+  #pf-table th:hover .tip, #pf-factors th:hover .tip { border-bottom: 1px dotted currentColor; }
+  .pf-note { margin: 0; font-size: 13px; color: var(--muted); }
+  .pf-recon { margin: 6px 2px 0; font-size: 12.5px; color: var(--muted); }
+  .pf-recon b { color: var(--ink); font-weight: 600; }
+  .pf-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pf-tile {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 52px;
+    padding: 9px 8px 5px;
+    background: var(--raise);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+  }
+  .pf-tile.tip { border-bottom: 1px solid var(--line-soft); }
+  .pf-tile.on { background: var(--accent-soft); border-color: var(--accent); }
+  .pf-tile.on.tip { border-bottom-color: var(--accent); }
+  .pf-tile-gl {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
+    font-size: 30px;
+    line-height: 1;
+    color: var(--glyph);
+  }
+  .pf-tile.on .pf-tile-gl { color: var(--accent); }
+  .pf-tile-p { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pf-tile-e {
+    min-height: 15px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
   /* ---------- results table ---------- */
   .tbl-wrap {
     overflow-x: auto;
@@ -757,6 +802,31 @@
     </div>
   </details>
 
+  <p class="section-head" id="pf-head">Prime Factor</p>
+
+  <details class="level" id="pf-card">
+    <summary>
+      <span class="chev"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="lv-head"><span class="lv-title">
+        <span class="lv-name tip" tabindex="0">One Symbol per Prime</span></span>
+        <span class="lv-meta">each prime above 3 keeps its own Sagittal ·
+          <b>61</b>-limit · exact &mdash; no boundaries, no error</span></span>
+      <span class="lv-preview" id="pf-preview" aria-hidden="true"></span>
+    </summary>
+    <div class="pf-body">
+      <p class="pf-note" id="pf-note" hidden></p>
+      <div id="pf-result">
+        <div class="tbl-wrap"><table id="pf-table"></table></div>
+        <div class="tbl-wrap"><table id="pf-factors"></table></div>
+        <p class="pf-recon" id="pf-recon"></p>
+      </div>
+      <div>
+        <p class="field-label">The full symbol set</p>
+        <div class="pf-strip" id="pf-strip"></div>
+      </div>
+    </div>
+  </details>
+
   <footer>
     <p>Port of the <em>Sagittal Standard JI Notation Calculator</em> spreadsheet
       by George Secor and Dave Keenan &mdash;
@@ -771,6 +841,7 @@
 
 <script>%%DATA_JS%%</script>
 <script>%%CORE_JS%%</script>
+<script>%%PRIME_FACTOR_JS%%</script>
 <script>
 "use strict";
 (() => {
@@ -1365,6 +1436,7 @@
     const showErr = Boolean(res.error);
     err.hidden = !showErr;
     levelsRoot.style.display = showErr ? "none" : "";
+    $("pf-card").style.display = showErr ? "none" : "";
     if (showErr) {
       err.textContent = res.error;
       $("cents").textContent = "—";
@@ -1419,6 +1491,9 @@
       part.table.appendChild(tbody);
       measureWidths(part.table);
     }
+    renderPF(SAG_PF.spell({
+      exps, residueNum: residue.n, residueDen: residue.d, nominal,
+    }));
     paintToggles();
   }
 
@@ -1556,6 +1631,171 @@
     syncZoomRange();
     drawDiagram();
   });
+
+  // ---------- prime factor ----------
+  const signedInt = (v) => (v > 0 ? "+" + v : v < 0 ? "−" + -v : "0");
+  const signedCents = (v) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(3) + "¢";
+
+  document.querySelector("#pf-card .lv-name").dataset.tip =
+    "The prime-factor JI notation: one symbol per prime. Where the precision "
+    + "levels pick the single nearest symbol for a pitch's whole alteration, here "
+    + "every prime above 3 keeps its own dedicated symbol — the Olympian "
+    + "symbol for that prime's notational comma, the set George Secor and Dave "
+    + "Keenan settled on the forum's “one symbol per prime” thread. A "
+    + "pitch is spelled by stacking one symbol per prime factor, inverted when "
+    + "the prime divides the denominator, while the 3-exponent, the tonic, and "
+    + "each comma's own 3-content set the nominal along the chain of fifths. "
+    + "Nothing is rounded: the symbols' commas multiply out to exactly your pitch.";
+
+  const PF_TIPS = {};
+  for (const g of GROUPS) PF_TIPS[g.key] = g.tip;
+  const PF_MAIN_COLS = [
+    { name: "Bravura", cls: "brav", tip: PF_TIPS.bravura },
+    { name: "Sagitype", cls: "mono", tip: PF_TIPS.sagitype },
+    { name: "Unicode", cls: "unichars", tip: PF_TIPS.unichars },
+    { name: "Codepoints", cls: "uni", tip: PF_TIPS.unicode },
+  ];
+  const PF_COLS = [
+    { name: "Prime" },
+    { name: "Exponent", cls: "num" },
+    { name: "Symbol", cls: "brav",
+      tip: "One copy of the prime's symbol per factor, inverted when the prime "
+        + "divides the denominator." },
+    { name: "Sagitype", cls: "mono", tip: PF_TIPS.sagitype },
+    { name: "Comma",
+      tip: "The ratio each copy of the symbol applies — the prime's "
+        + "notational comma, read in the direction it is used here." },
+    { name: "Alteration", cls: "num",
+      tip: "This row's whole pitch change: the comma's size times the exponent." },
+    { name: "Fifths", cls: "num",
+      tip: "How far this row moves the nominal along the chain of fifths. A "
+        + "symbol shifts it by minus its comma's 3-exponent, cancelling the "
+        + "comma's 3-content; the 3 row is your pitch's own fifths, which need "
+        + "no symbol — the nominal and its sharps or flats carry them. The "
+        + "last row is the sum: the nominal's distance from your tonic." },
+  ];
+  // 41 and 43 are the two symbols whose accents survive the usual dropping
+  const PF_ACCENT_NOTES = {
+    41: " Its mina accent stays: bare, this would be the 5-comma's symbol — "
+      + "82/81 misses 81/80 by less than a third of a cent.",
+    43: " Its double mina accent stays: bare, this would be the 17-comma's symbol.",
+  };
+
+  const pfParts = {
+    preview: $("pf-preview"), note: $("pf-note"),
+    result: $("pf-result"), table: $("pf-table"), factors: $("pf-factors"),
+    recon: $("pf-recon"), strip: $("pf-strip"),
+  };
+
+  const pfTiles = {};
+  for (const c of SAG_PF.COMMAS) {
+    const tile = document.createElement("span");
+    tile.className = "pf-tile tip tip-up";
+    tile.tabIndex = 0;
+    tile.dataset.prime = String(c.prime);
+    const shift = -c.exp3;
+    tile.dataset.tip = c.name + " — the symbol for prime " + c.prime + ": its "
+      + "comma " + c.num + "/" + c.den + ", " + signedCents(c.cents) + " per "
+      + "factor. Each factor of " + c.prime + " applies one copy and "
+      + (shift === 0
+        ? "leaves the nominal in place (the comma carries no 3-content)"
+        : "shifts the nominal " + signedInt(shift)
+          + (Math.abs(shift) === 1 ? " fifth" : " fifths") + " along the chain")
+      + "; inverted (" + c.asciiInv + ") it notates a " + c.prime
+      + " in the denominator." + (PF_ACCENT_NOTES[c.prime] || "");
+    tile.innerHTML = '<span class="pf-tile-gl">' + esc(c.uni) + "</span>"
+      + '<span class="pf-tile-p">' + c.prime + "</span>"
+      + '<span class="pf-tile-e"></span>';
+    pfParts.strip.appendChild(tile);
+    pfTiles[c.prime] = tile;
+  }
+
+  function pfHead(cols) {
+    const thead = document.createElement("thead");
+    const tr = document.createElement("tr");
+    cols.forEach((c, i) => {
+      const th = document.createElement("th");
+      if (i > 0) th.className = "grp";
+      th.innerHTML = c.tip
+        ? '<span class="tip" tabindex="0" data-tip="' + esc(c.tip) + '">' + c.name + "</span>"
+        : c.name;
+      tr.appendChild(th);
+    });
+    thead.appendChild(tr);
+    return thead;
+  }
+
+  function pfRow(values, cols, best) {
+    const tr = document.createElement("tr");
+    if (best) tr.className = "best";
+    values.forEach((v, i) => {
+      tr.appendChild(cell(v, (cols[i].cls || "") + (i > 0 ? " grp" : "")));
+    });
+    return tr;
+  }
+
+  function renderPF(model) {
+    for (const c of SAG_PF.COMMAS) {
+      pfTiles[c.prime].classList.remove("on");
+      pfTiles[c.prime].querySelector(".pf-tile-e").textContent = "";
+    }
+    const bad = Boolean(model.error);
+    pfParts.note.hidden = !bad;
+    pfParts.result.style.display = bad ? "none" : "";
+    if (bad) {
+      pfParts.note.textContent = model.error;
+      pfParts.preview.innerHTML = "";
+      return;
+    }
+    pfParts.preview.innerHTML =
+      '<span class="pv"><span class="pv-gl">' + esc(model.uni) + "</span></span>";
+
+    // the spelling itself, in the four forms the level tables use
+    pfParts.table.textContent = "";
+    pfParts.table.appendChild(pfHead(PF_MAIN_COLS));
+    const tb = document.createElement("tbody");
+    tb.appendChild(pfRow(
+      [model.uni, model.ascii, model.uni, codepoints(model.uni)], PF_MAIN_COLS, true));
+    pfParts.table.appendChild(tb);
+
+    // how it is built: a row per factor, then the nominal they land on
+    const rows = [];
+    if (model.exp3) {
+      rows.push(["3", signedInt(model.exp3), "", "", "", "", signedInt(model.exp3)]);
+    }
+    for (const f of model.factors) {
+      const rep = (s) => Array(f.count).fill(s).join(" ");
+      rows.push([String(f.prime), signedInt(f.exp), rep(f.uni), rep(f.ascii),
+        f.num + "/" + f.den, signedCents(f.cents), signedInt(f.fifths)]);
+    }
+    pfParts.factors.textContent = "";
+    pfParts.factors.style.display = rows.length ? "" : "none";
+    if (rows.length) {
+      rows.push(["", "", (ACC_GLYPH[model.sharpFlat] || "") + D.noteheads[model.letter],
+        model.entry, "", model.factors.length ? signedCents(model.altCents) : "",
+        signedInt(model.fifthsFromTonic)]);
+      pfParts.factors.appendChild(pfHead(PF_COLS));
+      const tbf = document.createElement("tbody");
+      rows.forEach((r, i) => tbf.appendChild(pfRow(r, PF_COLS, i === rows.length - 1)));
+      pfParts.factors.appendChild(tbf);
+    }
+
+    const nom = "<b>" + spellNominal(model.entry) + "</b>";
+    pfParts.recon.innerHTML =
+      !model.factors.length && !model.fifthsFromTonic
+        ? "The pitch is the tonic itself — a bare " + nom + "."
+      : !model.factors.length
+        ? nom + " sits " + fmt3(model.pythCents) + "¢ above the tonic — "
+          + "the pitch itself, reached by fifths alone: no symbols needed."
+      : nom + " sits " + fmt3(model.pythCents) + "¢ above the tonic; the "
+        + "symbols move it " + signedCents(model.altCents) + ", landing on <b>"
+        + fmt3(model.totalCents) + "¢</b> — the pitch.";
+
+    for (const f of model.factors) {
+      pfTiles[f.prime].classList.add("on");
+      pfTiles[f.prime].querySelector(".pf-tile-e").textContent = signedInt(f.exp);
+    }
+  }
 
   // ---------- wiring ----------
   for (const p of P) expInputs[p].addEventListener("input", onVectorInput);

@@ -489,6 +489,51 @@
   }
   .dg-readout b { color: var(--ink); font-weight: 600; }
 
+  /* ---------- prime factor ---------- */
+  #pf-card { margin-top: 12px; }
+  .pf-body { display: flex; flex-direction: column; gap: 16px; padding: 14px 20px 18px; }
+  .pf-body .field-label { margin-bottom: 8px; }
+  #pf-result { display: flex; flex-direction: column; gap: 12px; }
+  /* header help stays quiet until hovered, as in the level tables */
+  #pf-table th .tip, #pf-factors th .tip { border-bottom: none; }
+  #pf-table th:hover .tip, #pf-factors th:hover .tip { border-bottom: 1px dotted currentColor; }
+  .pf-note { margin: 0; font-size: 13px; color: var(--muted); }
+  .pf-recon { margin: 6px 2px 0; font-size: 12.5px; color: var(--muted); }
+  .pf-recon b { color: var(--ink); font-weight: 600; }
+  .pf-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pf-tile {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 52px;
+    padding: 9px 8px 5px;
+    background: var(--raise);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+  }
+  .pf-tile.tip { border-bottom: 1px solid var(--line-soft); }
+  .pf-tile.on { background: var(--accent-soft); border-color: var(--accent); }
+  .pf-tile.on.tip { border-bottom-color: var(--accent); }
+  .pf-tile-gl {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
+    font-size: 30px;
+    line-height: 1;
+    color: var(--glyph);
+  }
+  .pf-tile.on .pf-tile-gl { color: var(--accent); }
+  .pf-tile-p { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pf-tile-e {
+    min-height: 15px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
   /* ---------- results table ---------- */
   .tbl-wrap {
     overflow-x: auto;
@@ -764,6 +809,31 @@
     </div>
   </details>
 
+  <p class="section-head" id="pf-head">Prime Factor</p>
+
+  <details class="level" id="pf-card">
+    <summary>
+      <span class="chev"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="lv-head"><span class="lv-title">
+        <span class="lv-name tip" tabindex="0">One Symbol per Prime</span></span>
+        <span class="lv-meta">each prime above 3 keeps its own Sagittal ·
+          <b>61</b>-limit · exact &mdash; no boundaries, no error</span></span>
+      <span class="lv-preview" id="pf-preview" aria-hidden="true"></span>
+    </summary>
+    <div class="pf-body">
+      <p class="pf-note" id="pf-note" hidden></p>
+      <div id="pf-result">
+        <div class="tbl-wrap"><table id="pf-table"></table></div>
+        <div class="tbl-wrap"><table id="pf-factors"></table></div>
+        <p class="pf-recon" id="pf-recon"></p>
+      </div>
+      <div>
+        <p class="field-label">The full symbol set</p>
+        <div class="pf-strip" id="pf-strip"></div>
+      </div>
+    </div>
+  </details>
+
   <footer>
     <p>Port of the <em>Sagittal Standard JI Notation Calculator</em> spreadsheet
       by George Secor and Dave Keenan &mdash;
@@ -953,6 +1023,147 @@ const SAG = (() => {
 })();
 
 if (typeof module !== "undefined") module.exports = SAG;</script>
+<script>/* Sagittal prime-factor (one-symbol-per-prime) notation.
+ *
+ * One comma per prime, as agreed by George Secor and Dave Keenan
+ * (forum.sagittal.org t=99): each comma is the smallest-|3-exponent| comma of
+ * its prime under 68.57¢, its symbol the extreme-level (Olympian) symbol for
+ * that size with mina accents dropped unless that collides with a lower
+ * prime's symbol (41 would become 5, 43 would become 17, so theirs stay).
+ * primeFactorSpec.mjs re-derives every symbol from the app's own tables.
+ */
+"use strict";
+
+const SAG_PF = (() => {
+  const D = typeof SAG_DATA !== "undefined" ? SAG_DATA : require("./data.js");
+  const S = typeof SAG !== "undefined" ? SAG : require("./core.js");
+
+  // Each row: the ratio one factor of the prime applies (so the prime is in
+  // the numerator), its monzo's 2- and 3-exponents, the symbol's Sagispeak
+  // name, and the symbol in that direction plus its inverse.
+  const COMMAS = [
+    { prime: 5, num: 80, den: 81, exp2: 4, exp3: -4, name: "pao",
+      ascii: "\\!", uni: "", asciiInv: "/|", uniInv: "" },
+    { prime: 7, num: 63, den: 64, exp2: -6, exp3: 2, name: "tao",
+      ascii: "!)", uni: "", asciiInv: "|)", uniInv: "" },
+    { prime: 11, num: 33, den: 32, exp2: -5, exp3: 1, name: "vai",
+      ascii: "/|\\", uni: "", asciiInv: "\\!/", uniInv: "" },
+    { prime: 13, num: 26, den: 27, exp2: 1, exp3: -3, name: "dao",
+      ascii: "(!/", uni: "", asciiInv: "(|\\", uniInv: "" },
+    { prime: 17, num: 4131, den: 4096, exp2: -12, exp3: 5, name: "sanai",
+      ascii: "~|(", uni: "", asciiInv: "~!(", uniInv: "" },
+    { prime: 19, num: 513, den: 512, exp2: -9, exp3: 3, name: "rai",
+      ascii: ")|", uni: "", asciiInv: ")!", uniInv: "" },
+    { prime: 23, num: 736, den: 729, exp2: 5, exp3: -6, name: "zai",
+      ascii: "|~", uni: "", asciiInv: "!~", uniInv: "" },
+    { prime: 29, num: 261, den: 256, exp2: -8, exp3: 2, name: "jai",
+      ascii: "(|", uni: "", asciiInv: "(!", uniInv: "" },
+    { prime: 31, num: 31, den: 32, exp2: -5, exp3: 0, name: "jpao",
+      ascii: "(\\!", uni: "", asciiInv: "(/|", uniInv: "" },
+    { prime: 37, num: 37, den: 36, exp2: -2, exp3: -2, name: "phrai",
+      ascii: ")//|", uni: "", asciiInv: ")\\\\!", uniInv: "" },
+    { prime: 41, num: 82, den: 81, exp2: 1, exp3: -4, name: "mopai",
+      ascii: ",/|", uni: " ", asciiInv: "`\\!", uniInv: " " },
+    { prime: 43, num: 129, den: 128, exp2: -7, exp3: 1, name: "momosanai",
+      ascii: ",,~|(", uni: " ", asciiInv: "``~!(", uniInv: " " },
+    { prime: 47, num: 47, den: 48, exp2: -4, exp3: -1, name: "bijanao",
+      ascii: "'(!(", uni: " ", asciiInv: ".(|(", uniInv: " " },
+    { prime: 53, num: 53, den: 54, exp2: -1, exp3: -3, name: "kao",
+      ascii: "!/", uni: "", asciiInv: "|\\", uniInv: "" },
+    { prime: 59, num: 531, den: 512, exp2: -9, exp3: 2, name: "bodai",
+      ascii: ".(|\\", uni: " ", asciiInv: "'(!/", uniInv: " " },
+    { prime: 61, num: 244, den: 243, exp2: 2, exp3: -5, name: "binai",
+      ascii: "'|(", uni: " ", asciiInv: ".!(", uniInv: " " },
+  ];
+  for (const c of COMMAS) c.cents = 1200 * Math.log(c.num / c.den) / Math.LN2;
+
+  // The chain of fifths the nominal comes from, bbF at -15 through xB at +19.
+  const ENTRIES = [];
+  for (let i = 0; i < D.fifthsString.length; i += 3) {
+    ENTRIES.push(D.fifthsString.slice(i, i + 3).trim());
+  }
+  const C_INDEX = ENTRIES.indexOf("C");
+  const FIFTH_CENTS = 1200 * (Math.log(3) - Math.log(2)) / Math.LN2;
+  const SF_GLYPH = { "": "", "#": String.fromCharCode(0xE262),
+                     b: String.fromCharCode(0xE260), x: String.fromCharCode(0xE263),
+                     bb: String.fromCharCode(0xE264) };
+
+  /**
+   * Spell {exps, nominal} in the prime-factor notation. residueNum/residueDen
+   * carry whatever part of the entered ratio the vector could not absorb.
+   * Every prime above 3 contributes its symbol once per factor (inverted for
+   * denominator primes) and shifts the nominal by minus its comma's
+   * 3-exponent; the 3-exponent and tonic move the nominal directly.
+   */
+  function spell(inputs) {
+    if (inputs.residueNum !== 1 || inputs.residueDen !== 1) {
+      const left = inputs.residueDen === 1 ? String(inputs.residueNum)
+        : inputs.residueNum + "/" + inputs.residueDen;
+      return { error: "The leftover factor " + left + " holds a prime beyond 61, "
+        + "and the one-symbol-per-prime set stops there." };
+    }
+    const tonicFifths = S.fifthsAboveC(inputs.nominal);
+    if (tonicFifths === null) {
+      return { error: "1/1 nominal must be one of bbF ... xB (e.g. C, D, bE, #F)." };
+    }
+
+    const exp3 = Number(inputs.exps[3] || 0);
+    let fifths = exp3 + tonicFifths;
+    const factors = [];
+    for (const c of COMMAS) {
+      const e = Number(inputs.exps[c.prime] || 0);
+      if (!e) continue;
+      fifths += -c.exp3 * e;
+      factors.push({
+        prime: c.prime, exp: e, count: Math.abs(e),
+        ascii: e > 0 ? c.ascii : c.asciiInv,
+        uni: e > 0 ? c.uni : c.uniInv,
+        num: e > 0 ? c.num : c.den,          // the ratio each copy applies
+        den: e > 0 ? c.den : c.num,
+        centsEach: (e > 0 ? 1 : -1) * c.cents,
+        cents: e * c.cents,
+        fifths: -c.exp3 * e,
+      });
+    }
+
+    const pos = fifths + C_INDEX;
+    if (pos < 0 || pos >= ENTRIES.length) {
+      return { error: "Off the chain of fifths: this spelling needs the nominal "
+        + Math.abs(fifths) + " fifths " + (fifths > 0 ? "above" : "below")
+        + " C, and the chain only runs bbF to xB." };
+    }
+    const entry = ENTRIES[pos];
+    const letter = entry.slice(-1);
+    const sharpFlat = entry.slice(0, -1);
+
+    // One symbol per factor, the greater alteration nearer the nominal; a
+    // lone sagittal attaches to its nominal, more get spaced apart (t=99).
+    const tokens = [];
+    for (const f of factors.slice().sort(
+      (a, b) => Math.abs(a.centsEach) - Math.abs(b.centsEach))) {
+      for (let i = 0; i < f.count; i++) tokens.push(f);
+    }
+    const ascii = tokens.length === 0 ? entry
+      : tokens.length === 1 ? tokens[0].ascii + entry
+      : tokens.map((f) => f.ascii).join(" ") + " " + entry;
+    const parts = tokens.map((f) => f.uni);
+    if (SF_GLYPH[sharpFlat]) parts.push(SF_GLYPH[sharpFlat]);
+    const uni = parts.join(" ") + D.noteheads[letter];
+
+    const fifthsFromTonic = fifths - tonicFifths;
+    const pythCents = S.excelMod(fifthsFromTonic * FIFTH_CENTS, 1200);
+    const altCents = factors.reduce((t, f) => t + f.cents, 0);
+    return {
+      factors, exp3, tonicFifths, fifths, fifthsFromTonic,
+      entry, letter, sharpFlat, ascii, uni,
+      pythCents, altCents, totalCents: S.excelMod(pythCents + altCents, 1200),
+    };
+  }
+
+  return { COMMAS, spell };
+})();
+
+if (typeof module !== "undefined") module.exports = SAG_PF;</script>
 <script>
 "use strict";
 (() => {
@@ -1547,6 +1758,7 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
     const showErr = Boolean(res.error);
     err.hidden = !showErr;
     levelsRoot.style.display = showErr ? "none" : "";
+    $("pf-card").style.display = showErr ? "none" : "";
     if (showErr) {
       err.textContent = res.error;
       $("cents").textContent = "—";
@@ -1601,6 +1813,9 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
       part.table.appendChild(tbody);
       measureWidths(part.table);
     }
+    renderPF(SAG_PF.spell({
+      exps, residueNum: residue.n, residueDen: residue.d, nominal,
+    }));
     paintToggles();
   }
 
@@ -1738,6 +1953,171 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
     syncZoomRange();
     drawDiagram();
   });
+
+  // ---------- prime factor ----------
+  const signedInt = (v) => (v > 0 ? "+" + v : v < 0 ? "−" + -v : "0");
+  const signedCents = (v) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(3) + "¢";
+
+  document.querySelector("#pf-card .lv-name").dataset.tip =
+    "The prime-factor JI notation: one symbol per prime. Where the precision "
+    + "levels pick the single nearest symbol for a pitch's whole alteration, here "
+    + "every prime above 3 keeps its own dedicated symbol — the Olympian "
+    + "symbol for that prime's notational comma, the set George Secor and Dave "
+    + "Keenan settled on the forum's “one symbol per prime” thread. A "
+    + "pitch is spelled by stacking one symbol per prime factor, inverted when "
+    + "the prime divides the denominator, while the 3-exponent, the tonic, and "
+    + "each comma's own 3-content set the nominal along the chain of fifths. "
+    + "Nothing is rounded: the symbols' commas multiply out to exactly your pitch.";
+
+  const PF_TIPS = {};
+  for (const g of GROUPS) PF_TIPS[g.key] = g.tip;
+  const PF_MAIN_COLS = [
+    { name: "Bravura", cls: "brav", tip: PF_TIPS.bravura },
+    { name: "Sagitype", cls: "mono", tip: PF_TIPS.sagitype },
+    { name: "Unicode", cls: "unichars", tip: PF_TIPS.unichars },
+    { name: "Codepoints", cls: "uni", tip: PF_TIPS.unicode },
+  ];
+  const PF_COLS = [
+    { name: "Prime" },
+    { name: "Exponent", cls: "num" },
+    { name: "Symbol", cls: "brav",
+      tip: "One copy of the prime's symbol per factor, inverted when the prime "
+        + "divides the denominator." },
+    { name: "Sagitype", cls: "mono", tip: PF_TIPS.sagitype },
+    { name: "Comma",
+      tip: "The ratio each copy of the symbol applies — the prime's "
+        + "notational comma, read in the direction it is used here." },
+    { name: "Alteration", cls: "num",
+      tip: "This row's whole pitch change: the comma's size times the exponent." },
+    { name: "Fifths", cls: "num",
+      tip: "How far this row moves the nominal along the chain of fifths. A "
+        + "symbol shifts it by minus its comma's 3-exponent, cancelling the "
+        + "comma's 3-content; the 3 row is your pitch's own fifths, which need "
+        + "no symbol — the nominal and its sharps or flats carry them. The "
+        + "last row is the sum: the nominal's distance from your tonic." },
+  ];
+  // 41 and 43 are the two symbols whose accents survive the usual dropping
+  const PF_ACCENT_NOTES = {
+    41: " Its mina accent stays: bare, this would be the 5-comma's symbol — "
+      + "82/81 misses 81/80 by less than a third of a cent.",
+    43: " Its double mina accent stays: bare, this would be the 17-comma's symbol.",
+  };
+
+  const pfParts = {
+    preview: $("pf-preview"), note: $("pf-note"),
+    result: $("pf-result"), table: $("pf-table"), factors: $("pf-factors"),
+    recon: $("pf-recon"), strip: $("pf-strip"),
+  };
+
+  const pfTiles = {};
+  for (const c of SAG_PF.COMMAS) {
+    const tile = document.createElement("span");
+    tile.className = "pf-tile tip tip-up";
+    tile.tabIndex = 0;
+    tile.dataset.prime = String(c.prime);
+    const shift = -c.exp3;
+    tile.dataset.tip = c.name + " — the symbol for prime " + c.prime + ": its "
+      + "comma " + c.num + "/" + c.den + ", " + signedCents(c.cents) + " per "
+      + "factor. Each factor of " + c.prime + " applies one copy and "
+      + (shift === 0
+        ? "leaves the nominal in place (the comma carries no 3-content)"
+        : "shifts the nominal " + signedInt(shift)
+          + (Math.abs(shift) === 1 ? " fifth" : " fifths") + " along the chain")
+      + "; inverted (" + c.asciiInv + ") it notates a " + c.prime
+      + " in the denominator." + (PF_ACCENT_NOTES[c.prime] || "");
+    tile.innerHTML = '<span class="pf-tile-gl">' + esc(c.uni) + "</span>"
+      + '<span class="pf-tile-p">' + c.prime + "</span>"
+      + '<span class="pf-tile-e"></span>';
+    pfParts.strip.appendChild(tile);
+    pfTiles[c.prime] = tile;
+  }
+
+  function pfHead(cols) {
+    const thead = document.createElement("thead");
+    const tr = document.createElement("tr");
+    cols.forEach((c, i) => {
+      const th = document.createElement("th");
+      if (i > 0) th.className = "grp";
+      th.innerHTML = c.tip
+        ? '<span class="tip" tabindex="0" data-tip="' + esc(c.tip) + '">' + c.name + "</span>"
+        : c.name;
+      tr.appendChild(th);
+    });
+    thead.appendChild(tr);
+    return thead;
+  }
+
+  function pfRow(values, cols, best) {
+    const tr = document.createElement("tr");
+    if (best) tr.className = "best";
+    values.forEach((v, i) => {
+      tr.appendChild(cell(v, (cols[i].cls || "") + (i > 0 ? " grp" : "")));
+    });
+    return tr;
+  }
+
+  function renderPF(model) {
+    for (const c of SAG_PF.COMMAS) {
+      pfTiles[c.prime].classList.remove("on");
+      pfTiles[c.prime].querySelector(".pf-tile-e").textContent = "";
+    }
+    const bad = Boolean(model.error);
+    pfParts.note.hidden = !bad;
+    pfParts.result.style.display = bad ? "none" : "";
+    if (bad) {
+      pfParts.note.textContent = model.error;
+      pfParts.preview.innerHTML = "";
+      return;
+    }
+    pfParts.preview.innerHTML =
+      '<span class="pv"><span class="pv-gl">' + esc(model.uni) + "</span></span>";
+
+    // the spelling itself, in the four forms the level tables use
+    pfParts.table.textContent = "";
+    pfParts.table.appendChild(pfHead(PF_MAIN_COLS));
+    const tb = document.createElement("tbody");
+    tb.appendChild(pfRow(
+      [model.uni, model.ascii, model.uni, codepoints(model.uni)], PF_MAIN_COLS, true));
+    pfParts.table.appendChild(tb);
+
+    // how it is built: a row per factor, then the nominal they land on
+    const rows = [];
+    if (model.exp3) {
+      rows.push(["3", signedInt(model.exp3), "", "", "", "", signedInt(model.exp3)]);
+    }
+    for (const f of model.factors) {
+      const rep = (s) => Array(f.count).fill(s).join(" ");
+      rows.push([String(f.prime), signedInt(f.exp), rep(f.uni), rep(f.ascii),
+        f.num + "/" + f.den, signedCents(f.cents), signedInt(f.fifths)]);
+    }
+    pfParts.factors.textContent = "";
+    pfParts.factors.style.display = rows.length ? "" : "none";
+    if (rows.length) {
+      rows.push(["", "", (ACC_GLYPH[model.sharpFlat] || "") + D.noteheads[model.letter],
+        model.entry, "", model.factors.length ? signedCents(model.altCents) : "",
+        signedInt(model.fifthsFromTonic)]);
+      pfParts.factors.appendChild(pfHead(PF_COLS));
+      const tbf = document.createElement("tbody");
+      rows.forEach((r, i) => tbf.appendChild(pfRow(r, PF_COLS, i === rows.length - 1)));
+      pfParts.factors.appendChild(tbf);
+    }
+
+    const nom = "<b>" + spellNominal(model.entry) + "</b>";
+    pfParts.recon.innerHTML =
+      !model.factors.length && !model.fifthsFromTonic
+        ? "The pitch is the tonic itself — a bare " + nom + "."
+      : !model.factors.length
+        ? nom + " sits " + fmt3(model.pythCents) + "¢ above the tonic — "
+          + "the pitch itself, reached by fifths alone: no symbols needed."
+      : nom + " sits " + fmt3(model.pythCents) + "¢ above the tonic; the "
+        + "symbols move it " + signedCents(model.altCents) + ", landing on <b>"
+        + fmt3(model.totalCents) + "¢</b> — the pitch.";
+
+    for (const f of model.factors) {
+      pfTiles[f.prime].classList.add("on");
+      pfTiles[f.prime].querySelector(".pf-tile-e").textContent = signedInt(f.exp);
+    }
+  }
 
   // ---------- wiring ----------
   for (const p of P) expInputs[p].addEventListener("input", onVectorInput);
