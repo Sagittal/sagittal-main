@@ -192,7 +192,7 @@
   // ---------- table shape ----------
   ok("Unicode column first",
     heads("medium").join("|")
-    === "Bravura|Sagitype|Unicode|Codepoints|FifthsCount|Cents|Error",
+    === "Bravura|Sagitype|Unicode|UnicodeCodepoints|FifthsCount|Cents|Error",
     heads("medium").join("|"));
   const allCells = [...card("medium").querySelectorAll("th, td")]
     .filter((c) => !c.classList.contains("rowtog"));
@@ -268,12 +268,18 @@
     dataCells("medium", 0).length === 7,
     dataCells("medium", 0).length);
   ok("the last checked variant is not greyed out", $("show-revo").disabled === false);
-  ok("the locked box keeps a dark tick and takes no hover",
-    getComputedStyle($("show-revo"), "::after").borderRightColor === inkColor
-    && getComputedStyle($("show-revo")).backgroundColor !== inkColor
-    && getComputedStyle($("show-revo")).pointerEvents === "none",
-    getComputedStyle($("show-revo"), "::after").borderRightColor + " on "
-    + getComputedStyle($("show-revo")).backgroundColor);
+  const lum = (c) => {
+    const [r, g, b] = c.match(/\d+/g).map(Number);
+    return 0.299 * r + 0.587 * g + 0.114 * b;
+  };
+  const lockTick = getComputedStyle($("show-revo"), "::after").borderRightColor;
+  const lockBack = getComputedStyle($("show-revo")).backgroundColor;
+  ok("the locked box is a dark tick on a grey ground, in either theme",
+    lum(lockTick) < 60 && lum(lockBack) > 140 && lum(lockBack) < 215,
+    lockTick + " on " + lockBack);
+  ok("the locked box explains why it will not switch off",
+    /at least one Flavor/i.test($("show-revo").closest("label").dataset.tip || ""),
+    $("show-revo").closest("label").dataset.tip);
   $("show-revo").checked = false; fire($("show-revo"), "change");
   ok("unchecking the last one is refused", $("show-revo").checked === true);
   ok("with one flavor the preview carries no label at all",
@@ -347,6 +353,47 @@
   btn.click();
   ok("copy copies the cell text",
     copied === cpCell.querySelector(".cv").textContent, JSON.stringify(copied));
+
+  // ---------- a folded row is short, and its cells all show a dash ----------
+  const firstRow = bodyRows("medium")[0];
+  const tallBefore = firstRow.getBoundingClientRect().height;
+  firstRow.querySelector(".rowtog").click();
+  const shortAfter = firstRow.getBoundingClientRect().height;
+  ok("folding a row makes it short", shortAfter < 34 && shortAfter < tallBefore * 0.5,
+    Math.round(tallBefore) + " -> " + Math.round(shortAfter));
+  ok("a folded row shows a dash in every cell",
+    [...firstRow.children].slice(1).every((td) => {
+      const d = td.querySelector(".cd");
+      return d && getComputedStyle(d).opacity === "1";
+    }));
+  ok("the row toggle wears the same chip as the column toggles",
+    Boolean(firstRow.querySelector(".rowtog .tog")));
+  firstRow.querySelector(".rowtog").click();
+
+  // ---------- preview slots line up across cards ----------
+  const shownPreview = (sel) =>
+    [...document.querySelectorAll("#levels details.level:not([open]) " + sel)]
+      .map((e) => Math.round(e.getBoundingClientRect().left))
+      .filter((x) => x > 0);
+  const labXs = shownPreview(".lv-preview .pv-lab");
+  const glXs = shownPreview(".lv-preview .pv-gl");
+  ok("preview labels share one left edge per slot",
+    labXs.length > 0 && new Set(labXs).size === 2, labXs.join());
+  ok("preview glyphs share one left edge per slot",
+    glXs.length > 0 && new Set(glXs).size === 2, glXs.join());
+
+  // ---------- section headers are labels again ----------
+  const secHead = document.querySelector(".section-head");
+  ok("section headers are small uppercase labels",
+    getComputedStyle(secHead).textTransform === "uppercase"
+    && parseFloat(getComputedStyle(secHead).fontSize) <= 12,
+    getComputedStyle(secHead).fontSize + " " + getComputedStyle(secHead).textTransform);
+
+  // ---------- nothing calls the prime list a vector ----------
+  const tips = [...document.querySelectorAll("[data-tip]")].map((e) => e.dataset.tip);
+  ok("no tooltip calls the prime list a vector",
+    !tips.some((x) => /vector/i.test(x)),
+    tips.find((x) => /vector/i.test(x)));
 
   // ---------- reset ----------
   setNominal("bA");

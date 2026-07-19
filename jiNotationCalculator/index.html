@@ -97,7 +97,7 @@
     color: var(--ink);
     font: 15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 38px 22px 60px; overflow-x: clip; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 38px 22px 60px; }
 
   .mono { font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace; }
   /* Bravura centres accidentals on the staff, so inline use needs re-centring */
@@ -285,9 +285,9 @@
   .combo-list li[aria-selected="true"] { background: var(--line-soft); font-weight: 600; }
   .combo-list li.active { background: var(--accent-soft); }
 
-  .checks { display: flex; flex-direction: column; gap: 7px; padding-top: 6px; }
-  .checks label { display: inline-flex; align-items: center; gap: 6px; font-size: 14px;
-                  color: var(--muted); cursor: pointer; }
+  .checks { display: flex; flex-direction: column; gap: 3px; padding-top: 4px; }
+  .checks label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
+                  line-height: 1.15; color: var(--muted); cursor: pointer; }
   /* drawn from scratch: the native control paints its own tick, and no
      accent-color setting stops that tick coming out white */
   .checks input {
@@ -320,12 +320,12 @@
   .checks label:hover input:not(.locked) { border-color: var(--ink); }
   /* the last one checked cannot be switched off, and should look it */
   .checks input.locked {
-    background: var(--line);
-    border-color: var(--line);
+    background: #b8b2a8;
+    border-color: #b8b2a8;
     cursor: default;
-    pointer-events: none;
   }
-  .checks input.locked::after { border-color: var(--ink); }
+  .checks input.locked::after { border-color: #14120f; }
+  .checks label:hover input.locked { background: #b8b2a8; border-color: #b8b2a8; }
   .checks label:has(input.locked) { cursor: default; }
 
   .reset-wrap { position: absolute; right: 24px; bottom: 20px; }
@@ -351,6 +351,7 @@
   /* ---------- tooltips ---------- */
   .tip { position: relative; cursor: help; border-bottom: 1px dotted currentColor; }
   .tip::after, button.add-prime[data-tip]::after {
+    display: none;
     max-width: min(420px, calc(100vw - 40px));
     content: attr(data-tip);
     position: absolute;
@@ -375,6 +376,7 @@
   .tip.tip-up::after { top: auto; bottom: calc(100% + 9px); }
   .tip:hover::after, .tip:focus-visible::after,
   button.add-prime:hover::after, button.add-prime:focus-visible::after {
+    display: block;
     opacity: 1;
     visibility: visible;
   }
@@ -385,12 +387,12 @@
   /* ---------- precision levels ---------- */
   #levels { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
   .section-head {
-    font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    color: var(--ink);
-    margin: 34px 2px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 30px 2px 10px;
   }
   #diagram-card { margin-top: 12px; }
   .level { border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
@@ -427,8 +429,14 @@
     padding-left: 16px;
   }
   .pv { display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; }
-  .lv-preview .pv-lab { min-width: 34px; text-align: right; }
-  .lv-preview .pv-gl { min-width: 58px; text-align: left; }
+  .lv-preview .pv {
+    display: grid;
+    grid-template-columns: 42px 66px;
+    align-items: center;
+    gap: 8px;
+  }
+  .lv-preview .pv-lab { text-align: right; }
+  .lv-preview .pv-gl { text-align: left; }
   .pv-lab { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .pv-gl {
     font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
@@ -599,12 +607,13 @@
   td.uni {
     font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
     font-size: 11px;
-    white-space: normal;
-    word-break: break-all;
+    line-height: 1.45;
   }
+  td.uni .cw { white-space: pre; }
   td.unichars {
     font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
     font-size: 14px;
+    letter-spacing: 0;
   }
   td.num { font-variant-numeric: tabular-nums; }
   td.dim { color: var(--muted); }
@@ -621,7 +630,7 @@
   }
   tbody tr.rowoff td { padding-top: 2px; padding-bottom: 2px; }
   tbody tr.rowoff td.brav { font-size: 13px; }
-  tbody tr.rowoff .cw { max-width: 0; opacity: 0; }
+  tbody tr.rowoff .cw { max-width: 0; max-height: 0; opacity: 0; }
   tbody tr.rowoff .cd { max-width: var(--w, 1em); opacity: 1; }
   tbody tr.rowoff .copy { display: none; }
   td .ph { color: var(--muted); opacity: 0.7; }
@@ -633,6 +642,7 @@
     overflow: hidden;
     vertical-align: middle;
     max-width: var(--w, none);
+    max-height: 400px;
   }
   .cd { max-width: 0; opacity: 0; color: var(--muted); }
   /* the music font has no hyphen, so dashes must not inherit it */
@@ -690,7 +700,7 @@
   #levels.cx-bravura .g-bravura .cw,
   #levels.cx-fifths .g-fifths .cw,
   #levels.cx-representing .g-representing .cw,
-  #levels.cx-error .g-error .cw { max-width: 0; opacity: 0; }
+  #levels.cx-error .g-error .cw { max-width: 0; max-height: 0; opacity: 0; }
   #levels.cx-unicode .g-unicode.dash-lead .cd,
   #levels.cx-sagitype .g-sagitype.dash-lead .cd,
   #levels.cx-unichars .g-unichars.dash-lead .cd,
@@ -715,7 +725,7 @@
 
   @media (prefers-reduced-motion: no-preference) {
     button, input, .chev, .tog, .tip::after { transition: transform 150ms, opacity 130ms, background 120ms, border-color 120ms, color 120ms; }
-    .cw, .cd { transition: max-width 300ms cubic-bezier(.4, 0, .2, 1), opacity 220ms; }
+    .cw, .cd { transition: max-width 300ms cubic-bezier(.4, 0, .2, 1), max-height 300ms cubic-bezier(.4, 0, .2, 1), opacity 220ms; }
     td { transition: padding 300ms cubic-bezier(.4, 0, .2, 1); }
   }
   @media (max-width: 680px) {
@@ -1276,7 +1286,7 @@ if (typeof module !== "undefined") module.exports = SAG_PF;</script>
       expCells[p][0].classList.toggle("tip-up", removable);
       if (removable) {
         expCells[p][0].dataset.tip = "Remove prime " + p
-          + (i < visible - 1 ? " and every prime above it." : ".");
+          + (i < visible - 1 ? " and every prime above it from the list." : " from the list.");
       } else {
         delete expCells[p][0].dataset.tip;
       }
@@ -1284,10 +1294,10 @@ if (typeof module !== "undefined") module.exports = SAG_PF;</script>
     const maxed = visible >= P.length;
     $("add-prime").disabled = maxed;
     $("add-prime").dataset.tip = maxed
-      ? "61 is as far as the spreadsheet's vector goes. It is already well past the "
-        + "notation's own reach — Extreme, the finest level, is only 47-limit — so "
-        + "anything above this would have no symbols to be notated with anyway."
-      : "Add prime " + P[visible] + " to the vector.";
+      ? "61 is as far as the spreadsheet's list of primes goes. It is already well "
+        + "past the notation's own reach — Extreme, the finest level, is only "
+        + "47-limit — so anything above this would have no symbols to notate it with."
+      : "Add prime " + P[visible] + " to the list.";
   }
 
   function markDoomed(fromIdx, on) {
@@ -1494,9 +1504,9 @@ if (typeof module !== "undefined") module.exports = SAG_PF;</script>
   }
   const fmtInt = (v) => (typeof v === "number" ? String(v) : "");
   const diacritics = (d) => (d === "none" ? "no diacritics" : d);
-  const codepoints = (s) => [...s].filter((c) => c !== " ")
+  const codepoints = (s, sep) => [...s].filter((c) => c !== " ")
     .map((c) => "U+" + c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0"))
-    .join(" ");
+    .join(sep || " ");
 
   // ---------- column model ----------
   const GROUPS = [
@@ -1511,10 +1521,10 @@ if (typeof module !== "undefined") module.exports = SAG_PF;</script>
     { key: "unichars", name: "Unicode", variants: true, cls: "unichars",
       tip: "The characters themselves. They will show as boxes in anything without "
         + "a SMuFL font, but they paste through intact.",
-      value: (row, lv, v) => lv[v + "Unicode"] },
-    { key: "unicode", name: "Codepoints", variants: true, cls: "uni",
-      tip: "The SMuFL codepoints of those characters, written out.",
-      value: (row, lv, v) => codepoints(lv[v + "Unicode"]) },
+      value: (row, lv, v) => lv[v + "Unicode"].replace(/ /g, "") },
+    { key: "unicode", name: "Unicode<br>Codepoints", variants: true, cls: "uni",
+      tip: "The SMuFL codepoints of those characters, written out one per line.",
+      value: (row, lv, v) => codepoints(lv[v + "Unicode"], "\n") },
     { key: "fifths", name: "Fifths<br>Count", variants: false, cls: "num",
       tip: "How many fifths along the chain of fifths this nominal sits from your "
         + "tonic — a rough measure of how far afield the spelling is.",
@@ -2124,9 +2134,18 @@ if (typeof module !== "undefined") module.exports = SAG_PF;</script>
   $("num").addEventListener("input", onRatioInput);
   $("den").addEventListener("input", onRatioInput);
   $("add-prime").addEventListener("click", () => setVisible(visible + 1));
+  const LOCK_TIP = "At least one Flavor has to stay on, so this one cannot be "
+    + "switched off while it is the only one showing.";
   function paintLocks() {
-    $("show-evo").classList.toggle("locked", show.evo && !show.revo);
-    $("show-revo").classList.toggle("locked", show.revo && !show.evo);
+    for (const [id, on] of [["show-evo", show.evo && !show.revo],
+                            ["show-revo", show.revo && !show.evo]]) {
+      const box = $(id);
+      box.classList.toggle("locked", on);
+      const label = box.closest("label");
+      label.classList.toggle("tip", on);
+      if (on) label.dataset.tip = LOCK_TIP;
+      else delete label.dataset.tip;
+    }
   }
 
   for (const [id, key] of [["show-evo", "evo"], ["show-revo", "revo"]]) {
