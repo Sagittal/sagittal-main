@@ -384,10 +384,44 @@
 
   // ---------- section headers are labels again ----------
   const secHead = document.querySelector(".section-head");
-  ok("section headers are small uppercase labels",
+  ok("section headers are uppercase labels, but bigger than a field label",
     getComputedStyle(secHead).textTransform === "uppercase"
-    && parseFloat(getComputedStyle(secHead).fontSize) <= 12,
-    getComputedStyle(secHead).fontSize + " " + getComputedStyle(secHead).textTransform);
+    && parseFloat(getComputedStyle(secHead).fontSize)
+       > parseFloat(getComputedStyle(document.querySelector(".field-label")).fontSize),
+    getComputedStyle(secHead).fontSize + " vs field label "
+    + getComputedStyle(document.querySelector(".field-label")).fontSize);
+
+  // ---------- no dotted underlines, and the ceiling bubble stays on screen ----------
+  ok("tooltips carry no dotted underline",
+    [...document.querySelectorAll(".tip")].every(
+      (e) => getComputedStyle(e).borderBottomStyle !== "dotted"));
+  for (let i = 6; i < SAG_DATA.primes.length; i++) $("add-prime").click();
+  const addBox = $("add-prime").getBoundingClientRect();
+  ok("the ceiling bubble is anchored to open leftwards",
+    getComputedStyle($("add-prime"), "::after").right === "0px"
+    && addBox.right < window.innerWidth,
+    getComputedStyle($("add-prime"), "::after").right);
+  $("reset").click();
+
+  // ---------- the codepoints copy on one line ----------
+  const cpsCell = dataCells("medium", 0)[colIndex("medium", "UnicodeCodepoints")];
+  ok("codepoints show one per line",
+    cpsCell.querySelector(".cv").textContent.includes("\n"));
+  let copiedCp = null;
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText: (t) => { copiedCp = t; copied = t; return Promise.resolve(); } },
+  });
+  cpsCell.querySelector("button.copy").click();
+  ok("copying codepoints gives one line, no newlines",
+    typeof copiedCp === "string" && !copiedCp.includes("\n") && /U\+/.test(copiedCp),
+    JSON.stringify(copiedCp));
+
+  // ---------- the preview glyph never wraps ----------
+  const pvGls = [...document.querySelectorAll("#levels details.level:not([open]) .pv-gl")];
+  ok("preview glyphs are given enough room, so none overflows its slot",
+    pvGls.length > 0 && pvGls.every((e) => e.scrollWidth <= e.clientWidth + 1),
+    pvGls.map((e) => e.scrollWidth + "/" + e.clientWidth).join(" "));
 
   // ---------- nothing calls the prime list a vector ----------
   const tips = [...document.querySelectorAll("[data-tip]")].map((e) => e.dataset.tip);
