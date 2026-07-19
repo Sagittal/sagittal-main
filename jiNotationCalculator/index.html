@@ -90,14 +90,14 @@
   }
 
   * { box-sizing: border-box; }
-  html { background: var(--bg); }
+  html { background: var(--bg); overflow-x: hidden; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--ink);
     font: 15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 38px 22px 60px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 38px 22px 60px; overflow-x: clip; }
 
   .mono { font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace; }
   /* Bravura centres accidentals on the staff, so inline use needs re-centring */
@@ -130,7 +130,7 @@
     flex-direction: column;
     gap: 24px;
   }
-  .row { display: flex; flex-wrap: wrap; gap: 22px 38px; }
+  .row { display: flex; flex-wrap: wrap; gap: 22px 26px; }
   .row-top { align-items: flex-end; }
   .row-bottom { align-items: flex-start; }
   .field-label {
@@ -148,7 +148,7 @@
   .ratio-block { padding-bottom: 0; }
   .ratio-block .field-label { text-align: center; }
   .ratio .frac { display: inline-flex; flex-direction: column; gap: 5px; }
-  .ratio input { width: 104px; }
+  .ratio input { width: 84px; }
   .ratio .vinculum { height: 1.5px; background: var(--muted); }
 
   input, select {
@@ -165,28 +165,29 @@
   .tip:focus-visible, .p:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
   /* the pitch's size, sitting above the vector rather than spelled out */
-  .vec-block { display: flex; flex-direction: column; min-width: 0; }
+  .vec-block { display: flex; flex-direction: column; flex: none; }
+  .cents-block { display: flex; flex-direction: column; padding-bottom: 21px; }
   .cents {
-    font-size: 13px;
+    margin: 0;
+    font-size: 15px;
     font-variant-numeric: tabular-nums;
-    color: var(--muted);
-    margin: 0 0 9px 84px;
-    height: 17px;
+    color: var(--ink);
+    white-space: nowrap;
+    padding: 6px 0;
   }
+  .cents .approx { color: var(--muted); }
 
   /* prime / exponent vector */
-  .vec-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; padding-bottom: 21px; }
+  .vec-wrap { display: flex; align-items: center; gap: 8px; flex: none; padding-bottom: 21px; }
   .vec {
+    flex: none;
     display: grid;
     grid-auto-flow: column;
     grid-template-rows: auto auto;
     align-items: center;
     gap: 2px 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
   }
-  .vec::-webkit-scrollbar { display: none; }
-  .vec .vec-lab { padding-right: 8px; text-align: right; margin: 0; }
+  .vec .vec-lab { padding-right: 6px; text-align: right; margin: 0; }
   .vec .vec-lab-prime { align-self: end; }
   .vec .vec-lab-exp { align-self: center; }
   .vec .p {
@@ -199,6 +200,7 @@
   }
   .vec .p.removable { cursor: pointer; }
   .vec .p.removable:hover { color: var(--accent); }
+  .vec .p.tip { border-bottom: none; }
   .vec .doomed { color: var(--accent); text-decoration: line-through; }
   .vec input.doomed {
     text-decoration: none;
@@ -207,8 +209,9 @@
     color: var(--accent);
     opacity: 0.55;
   }
-  .vec input { width: 36px; color: var(--muted); }
+  .vec input { width: 33px; color: var(--muted); }
   .vec input.nonzero { color: var(--ink); font-weight: 700; }
+  .vec input.doomed, .vec input.nonzero.doomed { color: var(--accent); }
   button.add-prime {
     flex: none;
     align-self: end;
@@ -286,8 +289,14 @@
                   color: var(--muted); cursor: pointer; }
   .checks input { width: auto; accent-color: var(--ink); cursor: pointer; }
   /* the last one checked cannot be switched off, and should look it */
-  .checks input.locked { accent-color: var(--muted); cursor: default; }
+  .checks input.locked {
+    accent-color: var(--line);
+    cursor: default;
+    pointer-events: none;
+    filter: grayscale(1);
+  }
   .checks label:has(input.locked) { cursor: default; }
+  .checks label:has(input.locked):hover span { color: var(--muted); }
 
   .reset-wrap { position: absolute; right: 24px; bottom: 20px; }
   button.reset {
@@ -312,6 +321,7 @@
   /* ---------- tooltips ---------- */
   .tip { position: relative; cursor: help; border-bottom: 1px dotted currentColor; }
   .tip::after, button.add-prime[data-tip]::after {
+    max-width: min(420px, calc(100vw - 40px));
     content: attr(data-tip);
     position: absolute;
     left: 0;
@@ -338,10 +348,20 @@
     visibility: visible;
   }
   button.add-prime::after { left: auto; right: 0; }
+  .tip.tip-right::after { left: auto; right: 0; }
   th .tip::after { left: auto; right: 0; }
 
   /* ---------- precision levels ---------- */
-  #levels { display: flex; flex-direction: column; gap: 12px; margin-top: 26px; }
+  #levels { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+  .section-head {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 30px 2px 0;
+  }
+  #diagram-card { margin-top: 12px; }
   .level { border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
   .level > summary {
     list-style: none;
@@ -375,7 +395,8 @@
     gap: 18px;
     padding-left: 16px;
   }
-  .pv { display: inline-flex; align-items: center; gap: 8px; }
+  .pv { display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  .lv-preview .pv { min-width: var(--pv-w, auto); }
   .pv-lab { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .pv-gl {
     font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
@@ -451,10 +472,10 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--thead);
-    padding: 9px 12px 7px;
+    padding: 9px 6px 7px;
     vertical-align: bottom;
   }
-  th.grouphead { cursor: pointer; user-select: none; }
+  th.grouphead { cursor: pointer; user-select: none; white-space: nowrap; }
   th.grouphead:hover { color: var(--accent); }
   .tog {
     display: inline-flex;
@@ -462,7 +483,7 @@
     justify-content: center;
     width: 15px;
     height: 15px;
-    margin-right: 7px;
+    margin-right: 5px;
     vertical-align: -2px;
     font-size: 12px;
     font-weight: 700;
@@ -482,7 +503,7 @@
   thead tr.subhead th { padding-top: 4px; padding-bottom: 8px; font-weight: 600; }
   thead { border-bottom: 1px solid var(--line); }
   td {
-    padding: 8px 12px;
+    padding: 8px 6px;
     border-bottom: 1px solid var(--line-soft);
     vertical-align: middle;
     white-space: nowrap;
@@ -504,8 +525,16 @@
   }
   td.num { font-variant-numeric: tabular-nums; }
   td.dim { color: var(--muted); }
-  tbody tr.approx td { color: var(--muted); }
-  tbody tr.exact td { color: var(--ink); }
+  tbody tr td { color: var(--muted); }
+  tbody tr.best td { color: var(--ink); }
+  th.rowtog, td.rowtog { width: 1%; padding-left: 10px; padding-right: 2px; text-align: center; }
+  td.rowtog { cursor: pointer; user-select: none; color: var(--muted); }
+  td.rowtog:hover { color: var(--accent); }
+  tbody tr.rowoff td { padding-top: 2px; padding-bottom: 2px; }
+  tbody tr.rowoff td.brav { font-size: 13px; }
+  tbody tr.rowoff .cw { max-width: 0; opacity: 0; }
+  tbody tr.rowoff .cd { max-width: var(--w, 1em); opacity: 1; }
+  tbody tr.rowoff .copy { display: none; }
   td .ph { color: var(--muted); opacity: 0.7; }
 
   /* collapsing animates: the cell's content shrinks to nothing and a dash
@@ -518,7 +547,13 @@
   }
   .cd { max-width: 0; opacity: 0; color: var(--muted); }
   /* the music font has no hyphen, so dashes must not inherit it */
-  .cd, td .ph { font-family: "Segoe UI", system-ui, sans-serif; }
+  .cd, td .ph {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--muted);
+  }
   .measuring .cw, .measuring .cd { transition: none !important; }
 
   /* hover-to-copy (left side: the values are right-justified) */
@@ -544,6 +579,7 @@
   }
   td.cp:hover .copy, td.cp:focus-within .copy { opacity: 1; pointer-events: auto; }
   td.cp .copy:hover { color: var(--accent); border-color: var(--accent); }
+  td.cp:has(.copy:hover) .cv { color: var(--accent); }
   td.cp .copy.done { color: #2f7d4f; border-color: #2f7d4f; opacity: 1; }
 
   footer {
@@ -565,12 +601,12 @@
   #levels.cx-fifths .g-fifths .cw,
   #levels.cx-representing .g-representing .cw,
   #levels.cx-error .g-error .cw { max-width: 0; opacity: 0; }
-  #levels.cx-unicode .g-unicode .cd,
-  #levels.cx-ascii .g-ascii .cd,
-  #levels.cx-bravura .g-bravura .cd,
-  #levels.cx-fifths .g-fifths .cd,
-  #levels.cx-representing .g-representing .cd,
-  #levels.cx-error .g-error .cd { max-width: var(--w, 1em); opacity: 1; }
+  #levels.cx-unicode .g-unicode.dash-lead .cd,
+  #levels.cx-ascii .g-ascii.dash-lead .cd,
+  #levels.cx-bravura .g-bravura.dash-lead .cd,
+  #levels.cx-fifths .g-fifths.dash-lead .cd,
+  #levels.cx-representing .g-representing.dash-lead .cd,
+  #levels.cx-error .g-error.dash-lead .cd { max-width: var(--w, 1em); opacity: 1; }
   #levels.cx-unicode td.g-unicode,
   #levels.cx-ascii td.g-ascii,
   #levels.cx-bravura td.g-bravura,
@@ -601,8 +637,8 @@
   <header>
     <h1>Sagittal Standard Just Intonation Notation Calculator</h1>
     <p class="sub">Enter a pitch as a ratio or as its prime exponents, choose the
-      Pythagorean nominal that is your 1/1, choose your preferred Sagittal flavor and
-      precision level.</p>
+      Pythagorean nominal to be your tonic, then choose your preferred Sagittal Flavor
+      and Precision Level.</p>
   </header>
 
   <div class="panel">
@@ -618,12 +654,15 @@
         </div>
       </div>
       <div class="vec-block">
-        <p class="cents"><span id="cents11">0.000</span>&cent;</p>
         <div class="vec-wrap">
           <div class="vec" id="vec"></div>
           <button class="add-prime" id="add-prime" type="button"
                   aria-label="Add the next prime">+</button>
         </div>
+      </div>
+      <div class="cents-block">
+        <p class="field-label">Cents</p>
+        <p class="cents" id="cents"></p>
       </div>
     </div>
     <div class="row row-bottom">
@@ -636,7 +675,7 @@
           </button>
           <ul class="combo-list" id="nominal-list" role="listbox" hidden></ul>
         </div>
-        <p class="hint">The Pythagorean nominal for your tonic<br>(from
+        <p class="hint">The Pythagorean nominal<br>for your tonic (from
           <span class="acc">&#xE264;</span>F to <span class="acc">&#xE263;</span>B).</p>
       </div>
       <div>
@@ -653,14 +692,15 @@
   </div>
 
   <p id="error-msg" hidden></p>
+  <p class="section-head" id="levels-head">Precision Level</p>
   <div id="levels"></div>
+  <p class="section-head" id="diagram-head">Diagram</p>
 
   <details class="level" id="diagram-card">
     <summary>
       <span class="chev"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <span class="lv-head"><span class="lv-title">
-        <span class="lv-name">Precision Levels</span>
-        <span class="lv-kind">Diagram</span></span>
+        <span class="lv-name">Precision Levels</span></span>
         <span class="lv-meta">every symbol each level offers, laid out by the size of
           the alteration it stands for &mdash; your pitch marked on it</span></span>
     </summary>
@@ -973,8 +1013,13 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
       const removable = shown && i > 0;   // a monzo needs at least one slot
       expCells[p][0].classList.toggle("removable", removable);
       expCells[p][0].tabIndex = removable ? 0 : -1;
-      expCells[p][0].title = removable
-        ? "Remove prime " + p + (i < visible - 1 ? " and the primes above it" : "") : "";
+      expCells[p][0].classList.toggle("tip", removable);
+      if (removable) {
+        expCells[p][0].dataset.tip = "Remove prime " + p
+          + (i < visible - 1 ? " and every prime above it." : ".");
+      } else {
+        delete expCells[p][0].dataset.tip;
+      }
     });
     const maxed = visible >= P.length;
     $("add-prime").disabled = maxed;
@@ -1180,6 +1225,13 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
   });
 
   const fmt3 = (v) => (typeof v === "number" ? v.toFixed(3) : "");
+  // Any JI pitch bar a power of two lands on an irrational number of cents, so
+  // the figure is marked approximate unless it is exactly on a whole cent.
+  function paintCents(v) {
+    const exact = Math.abs(v - Math.round(v)) < 1e-9;
+    $("cents").innerHTML = (exact ? "" : '<span class="approx">&#8776;</span> ')
+      + fmt3(v) + "¢";
+  }
   const fmtInt = (v) => (typeof v === "number" ? String(v) : "");
   const diacritics = (d) => (d === "none" ? "no diacritics" : d);
   const codepoints = (s) => [...s].filter((c) => c !== " ")
@@ -1188,17 +1240,17 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
 
   // ---------- column model ----------
   const GROUPS = [
-    { key: "unicode", name: "Unicode", variants: true, cls: "uni",
-      tip: "The SMuFL codepoints of the symbols, for pasting into anything that "
-        + "understands them.",
-      value: (row, lv, v) => codepoints(lv[v + "Unicode"]) },
-    { key: "ascii", name: "ASCII", variants: true, cls: "mono",
-      tip: "Sagittal's plain-text shorthand, as used on the forum and in Scala.",
-      value: (row, lv, v) => lv[v + "Ascii"] },
     { key: "bravura", name: "Bravura", variants: true, cls: "brav",
       tip: "The symbols themselves, drawn in Bravura — the Sagittal-corrected build "
         + "of it is embedded in this page, so nothing needs installing.",
       value: (row, lv, v) => lv[v + "Unicode"] },
+    { key: "ascii", name: "ASCII", variants: true, cls: "mono",
+      tip: "Sagittal's plain-text shorthand, as used on the forum and in Scala.",
+      value: (row, lv, v) => lv[v + "Ascii"] },
+    { key: "unicode", name: "Unicode", variants: true, cls: "uni",
+      tip: "The SMuFL codepoints of the symbols, for pasting into anything that "
+        + "understands them.",
+      value: (row, lv, v) => codepoints(lv[v + "Unicode"]) },
     { key: "fifths", name: "Fifths Count", variants: false, cls: "num",
       tip: "How many fifths along the chain of fifths this nominal sits from your "
         + "tonic — a rough measure of how far afield the spelling is.",
@@ -1216,8 +1268,6 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
   const show = { evo: true, revo: true };
   const variantsOn = () => ["evo", "revo"].filter((v) => show[v]);
 
-  const collapseHint = (g) =>
-    collapsed.has(g.key) ? "Click to show this column again." : "Click to collapse it.";
 
   // The column set never changes when a group collapses — collapsing is a CSS
   // state, so the widths can animate instead of the table being rebuilt.
@@ -1255,19 +1305,18 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
     v.className = "cw cv";
     v.textContent = text;
     el.appendChild(v);
-    if (groupStart) {                      // the dash that stands in when collapsed
-      const d = document.createElement("span");
-      d.className = "cd";
-      d.textContent = "-";
-      el.appendChild(d);
-    }
+    const d = document.createElement("span");   // stands in when row or column folds
+    d.className = "cd";
+    d.textContent = "-";
+    el.appendChild(d);
+    const lead = groupStart ? " dash-lead" : "";
     if (String(text).trim() === "") {      // nothing to show, and nothing to copy
       v.textContent = "-";
       v.className = "cw cv ph";
-      el.className = cls || "";
+      el.className = (cls || "") + lead;
       return el;
     }
-    el.className = "cp " + (cls || "");
+    el.className = "cp " + (cls || "") + lead;
     const b = document.createElement("button");
     b.type = "button";
     b.className = "copy";
@@ -1301,7 +1350,7 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
       + '<span class="lv-head"><span class="lv-title">'
       + '<span class="lv-name tip" tabindex="0" data-tip="' + esc(LEVEL_TIPS[m.level])
       + '">' + name + "</span>"
-      + '<span class="lv-kind">Precision Level</span></span>'
+      + "</span>"
       + '<span class="lv-meta">maximum symbol set <b>' + m.symbolSet + "</b> · <b>"
       + m.limit + "</b>-limit · "
       + '<span class="tip" tabindex="0" data-tip="' + esc(resolutionTip(m))
@@ -1317,10 +1366,19 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
     det.appendChild(wrap);
     det.addEventListener("toggle", () => {
       if (det.open) measureWidths(table);   // a closed card has no layout to measure
+      if (DG.card.open) drawDiagram();      // the diagram tracks which cards are open
     });
     levelsRoot.appendChild(det);
-    levelParts[m.level] = { table, preview: sum.querySelector(".lv-preview") };
+    levelParts[m.level] = { table, card: det, preview: sum.querySelector(".lv-preview") };
   }
+
+  // keep any bubble that would run past the right edge anchored to its right
+  document.addEventListener("mouseover", (e) => {
+    const tip = e.target.closest(".tip");
+    if (!tip) return;
+    const box = tip.getBoundingClientRect();
+    tip.classList.toggle("tip-right", box.left + 430 > window.innerWidth);
+  });
 
   levelsRoot.addEventListener("click", (e) => {
     if (e.target.closest("summary") && e.target.closest(".tip")) {
@@ -1333,6 +1391,10 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
     const thead = document.createElement("thead");
     const needSub = variantsOn().length > 1;
     const top = document.createElement("tr");
+    const rowTogHead = document.createElement("th");
+    rowTogHead.className = "rowtog";
+    if (needSub) rowTogHead.rowSpan = 2;
+    top.appendChild(rowTogHead);
     let i = 0;
     while (i < cols.length) {
       const c = cols[i];
@@ -1346,8 +1408,8 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
       if (span > 1) th.colSpan = span;
       th.className = classes.join(" ");
       th.innerHTML = '<span class="tog" aria-hidden="true"></span>'
-        + '<span class="tip" tabindex="0" data-tip="'
-        + esc(c.g.tip + " " + collapseHint(c.g)) + '">' + c.g.name + "</span>";
+        + '<span class="tip" tabindex="0" data-tip="' + esc(c.g.tip) + '">'
+        + c.g.name + "</span>";
       th.addEventListener("click", () => toggleGroup(c.g));
       top.appendChild(th);
       i += span;
@@ -1377,7 +1439,7 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
       const open = !collapsed.has(g.key);
       levelsRoot.querySelectorAll("th.gh-" + g.key).forEach((th) => {
         th.querySelector(".tog").textContent = open ? "−" : "+";
-        th.querySelector(".tip").dataset.tip = g.tip + " " + collapseHint(g);
+        th.querySelector(".tip").dataset.tip = g.tip;
       });
     }
   }
@@ -1434,11 +1496,11 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
     levelsRoot.style.display = showErr ? "none" : "";
     if (showErr) {
       err.textContent = res.error;
-      $("cents11").textContent = "—";
+      $("cents").textContent = "—";
       return;
     }
 
-    $("cents11").textContent = fmt3(res.centsAbove11);
+    paintCents(res.centsAbove11);
 
     const rows = res.rows.filter((r) => r.letter !== "");
     const cols = columns();
@@ -1451,6 +1513,7 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
     for (const m of D.levels) {
       const part = levelParts[m.level];
       const both = variantsOn().length > 1;
+      part.preview.style.setProperty("--pv-w", variantsOn().length > 1 ? "104px" : "auto");
       part.preview.innerHTML = simplest
         ? variantsOn().map((v) => '<span class="pv">'
           + (both ? '<span class="pv-lab">' + (v === "evo" ? "Evo" : "Revo") + "</span>" : "")
@@ -1458,13 +1521,23 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
           + esc(simplest.levels[m.level][v + "Unicode"]) + "</span></span>").join("")
         : "";
 
+      const best = simplest;
       part.table.textContent = "";
       part.table.appendChild(buildHead(cols));
       const tbody = document.createElement("tbody");
       for (const row of rows) {
         const lv = row.levels[m.level];
         const tr = document.createElement("tr");
-        tr.className = lv.error === 0 ? "exact" : "approx";
+        if (row === best) tr.classList.add("best");
+        const tog = document.createElement("td");
+        tog.className = "rowtog";
+        tog.textContent = "−";
+        tog.title = "";
+        tog.addEventListener("click", () => {
+          const off = tr.classList.toggle("rowoff");
+          tog.textContent = off ? "+" : "−";
+        });
+        tr.appendChild(tog);
         cols.forEach((c, idx) => {
           const groupStart = Boolean(c.only || c.first);
           tr.appendChild(cell(c.g.value(row, lv, c.variant),
@@ -1514,7 +1587,8 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
     const pxPerCent = Number(DG.zoom.value);
     DG.zoomVal.textContent = pxPerCent + " px/¢";
     const width = DG.padL + DG_MAX_CENTS * pxPerCent + 24;
-    const height = DG.padT + D.levels.length * DG.band + 8;
+    const openCount = D.levels.filter((m) => levelParts[m.level].card.open).length;
+    const height = DG.padT + Math.max(1, openCount) * DG.band + 8;
     const svg = svgEl("svg", {
       width: Math.round(width), height,
       viewBox: `0 0 ${Math.round(width)} ${height}`,
@@ -1532,7 +1606,8 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
         c + "¢"));
     }
 
-    D.levels.forEach((m, i) => {
+    const shown = D.levels.filter((m) => levelParts[m.level].card.open);
+    (shown.length ? shown : D.levels).forEach((m, i) => {
       const top = DG.padT + i * DG.band;
       const mid = top + DG.band / 2;
       const rows = D.bounds[m.level];

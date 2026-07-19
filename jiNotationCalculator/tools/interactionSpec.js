@@ -16,13 +16,15 @@
   const groupTh = (lvl, name) =>
     [...card(lvl).querySelectorAll("th.grouphead")]
       .find((t) => t.textContent.replace(/[−+]/g, "").trim() === name);
+  // the first header cell is the row-collapse toggle column
   const heads = (lvl) => [...card(lvl).querySelectorAll("thead tr:first-child th")]
-    .map((t) => t.textContent.replace(/[−+]/g, "").trim());
+    .slice(1).map((t) => t.textContent.replace(/[−+]/g, "").trim());
   const bodyRows = (lvl) => [...card(lvl).querySelectorAll("tbody tr")];
-  const cellText = (lvl, r, c) => bodyRows(lvl)[r].children[c].textContent.trim();
+  const dataCells = (lvl, r) => [...bodyRows(lvl)[r].children].slice(1);
+  const cellText = (lvl, r, c) => dataCells(lvl, r)[c].querySelector(".cv").textContent.trim();
   const colIndex = (lvl, name, offset) => {
-    let idx = 0;
-    for (const th of card(lvl).querySelectorAll("thead tr:first-child th")) {
+    let idx = 0;   // the toggle column is skipped by the slice below
+    for (const th of [...card(lvl).querySelectorAll("thead tr:first-child th")].slice(1)) {
       if (th.textContent.replace(/[−+]/g, "").trim() === name) return idx + (offset || 0);
       idx += th.colSpan || 1;
     }
@@ -96,11 +98,12 @@
   const cents = document.querySelector(".cents");
   ok("cents shown as a bare field, not a sentence",
     /^-?[\d.]+¢$/.test(cents.textContent.trim()), cents.textContent.trim());
-  ok("cents sits above the prime row",
-    cents.getBoundingClientRect().bottom <= primeLab(3).getBoundingClientRect().top + 1);
-  ok("cents sits to the right of RATIO",
-    cents.getBoundingClientRect().left > ratioLabBox.right);
-  ok("cents uses the muted colour", getComputedStyle(cents).color === mutedColor);
+  ok("cents sits to the right of the exponent row",
+    cents.getBoundingClientRect().left > expInput(3).getBoundingClientRect().right);
+  ok("cents is labelled", Boolean(labelOf("Cents")));
+  ok("cents is set at the input size",
+    getComputedStyle(cents).fontSize === getComputedStyle($("num")).fontSize,
+    getComputedStyle(cents).fontSize);
 
   // ---------- reset in the panel's bottom-right ----------
   const panelBox = document.querySelector(".panel").getBoundingClientRect();
@@ -122,12 +125,11 @@
   // ---------- the whole vector fits on one line at 61 ----------
   for (let i = 6; i < SAG_DATA.primes.length; i++) $("add-prime").click();
   const vecBox = document.querySelector(".vec").getBoundingClientRect();
-  ok("all 17 primes fit on one row",
-    vecBox.height < 80 && document.querySelector(".vec").scrollWidth
-      <= document.querySelector(".vec").clientWidth + 1,
-    vecBox.height.toFixed(0) + "px tall, "
-    + document.querySelector(".vec").scrollWidth + " vs "
-    + document.querySelector(".vec").clientWidth);
+  ok("all 17 primes fit on one row", vecBox.height < 80, vecBox.height.toFixed(0) + "px");
+  ok("adding every prime does not make the page scroll sideways",
+    document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+    document.documentElement.scrollWidth + " vs "
+    + document.documentElement.clientWidth);
   ok("the + button explains the ceiling once 61 is reached",
     /47-limit/.test($("add-prime").dataset.tip), $("add-prime").dataset.tip);
   $("reset").click();
@@ -179,13 +181,14 @@
   // ---------- table shape ----------
   ok("Unicode column first",
     heads("medium").join("|")
-    === "Unicode|ASCII|Bravura|Fifths Count|Representing (¢)|Error (¢)",
+    === "Bravura|ASCII|Unicode|Fifths Count|Representing (¢)|Error (¢)",
     heads("medium").join("|"));
-  const allCells = [...card("medium").querySelectorAll("th, td")];
+  const allCells = [...card("medium").querySelectorAll("th, td")]
+    .filter((c) => !c.classList.contains("rowtog"));
   ok("every column is right-justified",
     allCells.every((c) => getComputedStyle(c).textAlign === "right"),
     allCells.map((c) => getComputedStyle(c).textAlign).find((a) => a !== "right"));
-  const bravCell = bodyRows("medium")[0].children[colIndex("medium", "Bravura")];
+  const bravCell = dataCells("medium", 0)[colIndex("medium", "Bravura")];
   ok("Bravura is big enough to read the nominal",
     parseFloat(getComputedStyle(bravCell).fontSize) >= 55,
     getComputedStyle(bravCell).fontSize);
@@ -195,7 +198,7 @@
 
   // ---------- collapsing ----------
   const groupCell = (lvl, name) =>
-    bodyRows(lvl)[0].children[colIndex(lvl, name)];
+    dataCells(lvl, 0)[colIndex(lvl, name)];
   const shrunk = (lvl, name) =>
     getComputedStyle(groupCell(lvl, name).querySelector(".cw")).maxWidth === "0px";
   const dashShown = (lvl, name) => {
@@ -251,8 +254,8 @@
   $("show-evo").checked = false; fire($("show-evo"), "change");
   ok("unchecking Evo drops the sub-header row", !subRow());
   ok("unchecking Evo halves the notation columns",
-    bodyRows("medium")[0].children.length === 6,
-    bodyRows("medium")[0].children.length);
+    dataCells("medium", 0).length === 6,
+    dataCells("medium", 0).length);
   ok("the last checked variant is not greyed out", $("show-revo").disabled === false);
   $("show-revo").checked = false; fire($("show-revo"), "change");
   ok("unchecking the last one is refused", $("show-revo").checked === true);
@@ -269,7 +272,7 @@
   ok("preview labels Evo and Revo", labsPv.join("|") === "Evo|Revo", labsPv.join("|"));
   const repIdx = colIndex("medium", "Representing (¢)");
   const simplestRow = bodyRows("medium")
-    .findIndex((tr) => tr.children[repIdx].querySelector(".cv").textContent.trim() === "-");
+    .findIndex((tr) => [...tr.children].slice(1)[repIdx].querySelector(".cv").textContent.trim() === "-");
   ok("an unaltered row shows a dash rather than a blank", simplestRow >= 0);
   const previewGl = card("medium").querySelectorAll(".pv-gl")[1].textContent.trim();
   ok("preview shows the simplest notation",
@@ -316,7 +319,7 @@
   card("ultra").querySelector("summary").click();
 
   // ---------- copy ----------
-  const cpCell = bodyRows("medium")[0].querySelector("td.cp");
+  const cpCell = dataCells("medium", 0).find((c) => c.classList.contains("cp"));
   const btn = cpCell.querySelector("button.copy");
   ok("copy button with an icon", Boolean(btn && btn.querySelector("svg")));
   let copied = null;

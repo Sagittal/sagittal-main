@@ -41,6 +41,6 @@ if not found:
 lines = html_mod.unescape(found.group(1)).split("\n")
 failures = [line for line in lines if line.startswith("FAIL")]
 for line in failures:
-    print(line)
+    print(line.encode("ascii", "backslashreplace").decode("ascii"))
 print(f"interaction: {len(lines) - len(failures)}/{len(lines)} passed")
 sys.exit(1 if failures else 0)
