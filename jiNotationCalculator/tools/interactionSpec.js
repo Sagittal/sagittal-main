@@ -37,10 +37,18 @@
   };
 
   // ---------- copy / labels ----------
-  ok("title spells out Just Intonation",
-    document.querySelector("h1").textContent.includes("Just Intonation"));
+  ok("title drops Just Intonation",
+    document.querySelector("h1").textContent.trim() === "Sagittal Standard Notation Calculator",
+    document.querySelector("h1").textContent);
+  ok("the tab title matches the heading",
+    document.title === "Sagittal Standard Notation Calculator", document.title);
   ok("subtitle is one line",
     document.querySelector("header .sub").getBoundingClientRect().height < 30);
+  ok("subtitle ends at the Flavor choice",
+    /choose your preferred Sagittal Flavor\.$/.test(
+      document.querySelector("header .sub").textContent.replace(/\s+/g, " ").trim())
+    && !/Precision Level/.test(document.querySelector("header .sub").textContent),
+    document.querySelector("header .sub").textContent.replace(/\s+/g, " ").trim().slice(-60));
 
   const labelOf = (text) => [...document.querySelectorAll(".field-label")]
     .find((e) => e.textContent.trim() === text);
