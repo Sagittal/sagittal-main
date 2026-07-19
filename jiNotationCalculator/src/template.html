@@ -1,0 +1,1456 @@
+<title>Sagittal Standard Just Intonation Notation Calculator</title>
+<!--
+  Web app port of the "Sagittal Standard JI Notation Calculator" spreadsheet
+  (forum.sagittal.org, topic t=86). All computation is a direct port of the
+  workbook's formulas; the boundary/comma/key tables are extracted verbatim.
+
+  Embedded font: subset of Bravura, Copyright © Steinberg Media Technologies
+  GmbH, licensed under the SIL Open Font License, Version 1.1
+  (https://scripts.sil.org/OFL). The subset uses the family name
+  "SagittalGlyphs" per the OFL's Reserved Font Name rules.
+-->
+<style>
+  @font-face {
+    font-family: "SagittalGlyphs";
+    src: url(data:font/woff2;base64,%%FONT_B64%%) format("woff2");
+    font-display: block;
+  }
+  :root {
+    --bg: #faf9f6;
+    --card: #ffffff;
+    --raise: #fbfaf7;
+    --ink: #211f1b;
+    --muted: #6e6862;
+    --line: #e5e1d8;
+    --line-soft: #efece5;
+    --accent: #a63a2b;
+    --accent-soft: #f3e4df;
+    --glyph: #16130f;
+    --input-bg: #ffffff;
+    --thead: #857e75;
+    --tip-bg: #2c2823;
+    --tip-fg: #f5f1e9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171614;
+      --card: #1f1d1a;
+      --raise: #24211d;
+      --ink: #eae6df;
+      --muted: #9b948a;
+      --line: #34302a;
+      --line-soft: #282521;
+      --accent: #e08a72;
+      --accent-soft: #3a2822;
+      --glyph: #f3efe7;
+      --input-bg: #26231f;
+      --thead: #8d867c;
+      --tip-bg: #3a352e;
+      --tip-fg: #f2eee6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171614;
+    --card: #1f1d1a;
+    --raise: #24211d;
+    --ink: #eae6df;
+    --muted: #9b948a;
+    --line: #34302a;
+    --line-soft: #282521;
+    --accent: #e08a72;
+    --accent-soft: #3a2822;
+    --glyph: #f3efe7;
+    --input-bg: #26231f;
+    --thead: #8d867c;
+    --tip-bg: #3a352e;
+    --tip-fg: #f2eee6;
+  }
+  :root[data-theme="light"] {
+    --bg: #faf9f6;
+    --card: #ffffff;
+    --raise: #fbfaf7;
+    --ink: #211f1b;
+    --muted: #6e6862;
+    --line: #e5e1d8;
+    --line-soft: #efece5;
+    --accent: #a63a2b;
+    --accent-soft: #f3e4df;
+    --glyph: #16130f;
+    --input-bg: #ffffff;
+    --thead: #857e75;
+    --tip-bg: #2c2823;
+    --tip-fg: #f5f1e9;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 38px 22px 60px; }
+
+  .mono { font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace; }
+  /* Bravura centres accidentals on the staff, so inline use needs re-centring */
+  .acc {
+    font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
+    font-size: 1.6em;
+    line-height: 0;
+    vertical-align: middle;
+  }
+
+  header { margin-bottom: 26px; }
+  header h1 {
+    font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-size: clamp(25px, 3.6vw, 34px);
+    font-weight: 600;
+    line-height: 1.14;
+    margin: 0 0 9px;
+    text-wrap: balance;
+  }
+  header .sub { color: var(--muted); font-size: 13px; margin: 0; }
+
+  /* ---------- input panel ---------- */
+  .panel {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px 26px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 22px 38px; }
+  .row-top { align-items: flex-end; }
+  .row-bottom { align-items: flex-start; }
+  .field-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 10px;
+    white-space: nowrap;
+  }
+  .hint { font-size: 12.5px; line-height: 1.5; color: var(--muted); margin: 9px 0 0; }
+
+  /* the ratio's vinculum and the exponent row share a centre line */
+  .ratio-block { padding-bottom: 0; }
+  .ratio-block .field-label { text-align: center; }
+  .ratio .frac { display: inline-flex; flex-direction: column; gap: 5px; }
+  .ratio input { width: 104px; }
+  .ratio .vinculum { height: 1.5px; background: var(--muted); }
+
+  input, select {
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    background: var(--input-bg);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 6px 4px;
+    text-align: center;
+  }
+  input:focus-visible, button:focus-visible,
+  .tip:focus-visible, .p:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* the pitch's size, sitting above the vector rather than spelled out */
+  .vec-block { display: flex; flex-direction: column; min-width: 0; }
+  .cents {
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    margin: 0 0 9px 84px;
+    height: 17px;
+  }
+
+  /* prime / exponent vector */
+  .vec-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; padding-bottom: 21px; }
+  .vec {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 2px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .vec::-webkit-scrollbar { display: none; }
+  .vec .vec-lab { padding-right: 8px; text-align: right; margin: 0; }
+  .vec .vec-lab-prime { align-self: end; }
+  .vec .vec-lab-exp { align-self: center; }
+  .vec .p {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    border-radius: 4px;
+    align-self: end;
+  }
+  .vec .p.removable { cursor: pointer; }
+  .vec .p.removable:hover { color: var(--accent); }
+  .vec .doomed { color: var(--accent); text-decoration: line-through; }
+  .vec input.doomed {
+    text-decoration: none;
+    border-color: var(--accent);
+    border-style: dashed;
+    color: var(--accent);
+    opacity: 0.55;
+  }
+  .vec input { width: 36px; color: var(--muted); }
+  .vec input.nonzero { color: var(--ink); font-weight: 700; }
+  button.add-prime {
+    flex: none;
+    align-self: end;
+    width: 28px;
+    height: 31px;
+    font: inherit;
+    font-size: 17px;
+    line-height: 1;
+    color: var(--muted);
+    background: none;
+    border: 1px dashed var(--line);
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button.add-prime:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+  button.add-prime:disabled { opacity: 0.4; cursor: help; }
+  button.add-prime { position: relative; }
+  th.grouphead .tip { cursor: pointer; border-bottom: none; }
+  th.grouphead:hover .tip { border-bottom: 1px dotted currentColor; }
+
+  /* tonic combo box (native selects cannot render the embedded font) */
+  .combo { position: relative; display: inline-block; }
+  .combo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 96px;
+    font: inherit;
+    color: var(--ink);
+    background: var(--input-bg);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 7px 10px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .combo-caret { color: var(--muted); font-size: 10px; line-height: 1; }
+  /* a zero line-height would let the glyph spill past its row and add phantom
+     scroll height to the popup */
+  .combo-list .acc, .combo-val .acc { font-size: 1.45em; line-height: 1; }
+  .combo-list {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 4px);
+    left: 0;
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    max-height: 260px;
+    overflow-y: auto;
+    min-width: 100%;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  }
+  /* fixed-height rows: the accidental glyphs are taller than the letters, and
+     uneven rows leave the popup with a stray strip of scrollable nothing */
+  .combo-list li {
+    display: flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .combo-list li[aria-selected="true"] { background: var(--line-soft); font-weight: 600; }
+  .combo-list li.active { background: var(--accent-soft); }
+
+  .checks { display: flex; gap: 16px; padding-top: 6px; }
+  .checks label { display: inline-flex; align-items: center; gap: 6px; font-size: 14px;
+                  color: var(--muted); cursor: pointer; }
+  .checks input { width: auto; accent-color: var(--ink); cursor: pointer; }
+  /* the last one checked cannot be switched off, and should look it */
+  .checks input.locked { accent-color: var(--muted); cursor: default; }
+  .checks label:has(input.locked) { cursor: default; }
+
+  .reset-wrap { position: absolute; right: 24px; bottom: 20px; }
+  button.reset {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    background: none;
+    border: 1px solid var(--muted);
+    border-radius: 5px;
+    padding: 8px 18px;
+    cursor: pointer;
+  }
+  button.reset:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--card);
+  }
+
+  #error-msg { color: var(--accent); font-weight: 600; margin: 26px 2px; }
+
+  /* ---------- tooltips ---------- */
+  .tip { position: relative; cursor: help; border-bottom: 1px dotted currentColor; }
+  .tip::after, button.add-prime[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 0;
+    top: calc(100% + 9px);
+    width: max-content;
+    max-width: min(420px, 78vw);
+    background: var(--tip-bg);
+    color: var(--tip-fg);
+    padding: 10px 13px;
+    border-radius: 7px;
+    font: 400 12.5px/1.55 "Segoe UI", system-ui, sans-serif;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: normal;
+    text-align: left;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+    opacity: 0;
+    visibility: hidden;
+    z-index: 30;
+  }
+  .tip:hover::after, .tip:focus-visible::after,
+  button.add-prime:hover::after, button.add-prime:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+  }
+  button.add-prime::after { left: auto; right: 0; }
+  th .tip::after { left: auto; right: 0; }
+
+  /* ---------- precision levels ---------- */
+  #levels { display: flex; flex-direction: column; gap: 12px; margin-top: 26px; }
+  .level { border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  .level > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 20px;
+    border-radius: 9px;
+  }
+  .level > summary::-webkit-details-marker { display: none; }
+  .level > summary:hover { background: var(--raise); }
+  .chev { flex: none; display: inline-flex; color: var(--muted); }
+  .level[open] .chev { transform: rotate(90deg); }
+  .lv-head { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .lv-title { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  .lv-name {
+    font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .lv-kind, .lv-meta { font-size: 12.5px; color: var(--muted); }
+  .lv-meta { font-variant-numeric: tabular-nums; }
+  .lv-meta b { color: var(--ink); font-weight: 600; }
+  .lv-preview {
+    margin-left: auto;
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-left: 16px;
+  }
+  .pv { display: inline-flex; align-items: center; gap: 8px; }
+  .pv-lab { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .pv-gl {
+    font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
+    font-size: 50px;
+    line-height: 1;
+    color: var(--glyph);
+  }
+  .level[open] > summary .lv-preview { display: none; }
+  .level[open] > summary { border-bottom: 1px solid var(--line); border-radius: 9px 9px 0 0; }
+
+  /* ---------- precision levels diagram ---------- */
+  .diagram-body { padding: 4px 20px 18px; }
+  .diagram-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+    padding: 8px 0 12px;
+  }
+  .diagram-controls input[type=range] { width: 190px; accent-color: var(--ink); }
+  .diagram-scroll { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+  .diagram-scroll svg { display: block; }
+  .dg-band { fill: var(--raise); }
+  .dg-rule { stroke: var(--line); stroke-width: 1; }
+  .dg-bound { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 3; }
+  .dg-zone.on { fill: var(--accent-soft); }
+  .dg-dot { fill: var(--muted); }
+  .dg-sym {
+    font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
+    fill: var(--glyph);
+    text-anchor: middle;
+  }
+  .dg-sym.on { fill: var(--accent); }
+  .dg-name {
+    font: 10px "Segoe UI", system-ui, sans-serif;
+    fill: var(--muted);
+    text-anchor: middle;
+  }
+  .dg-level {
+    font: 700 10px "Segoe UI", system-ui, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    fill: var(--thead);
+  }
+  .dg-tick { font: 10px "Segoe UI", system-ui, sans-serif; fill: var(--muted); text-anchor: middle; }
+  .dg-tick-line { stroke: var(--line); stroke-width: 1; }
+  .dg-mark { stroke: var(--accent); stroke-width: 1.5; }
+  .dg-mark-lab { font: 600 10px "Segoe UI", system-ui, sans-serif; fill: var(--accent); }
+  .dg-hit { fill: transparent; cursor: pointer; }
+  .dg-hit:hover + .dg-sym, .dg-sym:hover { fill: var(--accent); }
+  .dg-readout {
+    min-height: 20px;
+    font-size: 12.5px;
+    color: var(--muted);
+    padding-top: 8px;
+  }
+  .dg-readout b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- results table ---------- */
+  .tbl-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    border-radius: 0 0 9px 9px;
+  }
+  .tbl-wrap::-webkit-scrollbar { display: none; }
+  table { border-collapse: collapse; width: 100%; table-layout: auto; }
+  th, td { text-align: right; }
+  th {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--thead);
+    padding: 9px 12px 7px;
+    vertical-align: bottom;
+  }
+  th.grouphead { cursor: pointer; user-select: none; }
+  th.grouphead:hover { color: var(--accent); }
+  .tog {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    margin-right: 7px;
+    vertical-align: -2px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--muted);
+    background: var(--raise);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+  }
+  th.grouphead:hover .tog {
+    color: var(--card);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  th.underline { border-bottom: 1px solid var(--line-soft); }
+  th.collapsed { padding-left: 5px; padding-right: 5px; }
+  thead tr.subhead th { padding-top: 4px; padding-bottom: 8px; font-weight: 600; }
+  thead { border-bottom: 1px solid var(--line); }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.grp, th.grp { border-left: 1px solid var(--line-soft); }
+  td.brav {
+    font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
+    font-size: 57px;
+    line-height: 1;
+    color: var(--glyph);
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+  td.uni {
+    font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  td.num { font-variant-numeric: tabular-nums; }
+  td.dim { color: var(--muted); }
+  tbody tr.approx td { color: var(--muted); }
+  tbody tr.exact td { color: var(--ink); }
+  td .ph { color: var(--muted); opacity: 0.7; }
+
+  /* collapsing animates: the cell's content shrinks to nothing and a dash
+     grows in its place, so the column width follows frame by frame */
+  .cw, .cd {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: middle;
+    max-width: var(--w, none);
+  }
+  .cd { max-width: 0; opacity: 0; color: var(--muted); }
+  /* the music font has no hyphen, so dashes must not inherit it */
+  .cd, td .ph { font-family: "Segoe UI", system-ui, sans-serif; }
+  .measuring .cw, .measuring .cd { transition: none !important; }
+
+  /* hover-to-copy (left side: the values are right-justified) */
+  td.cp { position: relative; padding-left: 32px; }
+  td.cp .copy {
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+  }
+  td.cp:hover .copy, td.cp:focus-within .copy { opacity: 1; pointer-events: auto; }
+  td.cp .copy:hover { color: var(--accent); border-color: var(--accent); }
+  td.cp .copy.done { color: #2f7d4f; border-color: #2f7d4f; opacity: 1; }
+
+  footer {
+    margin-top: 42px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+  footer p { margin: 0 0 6px; }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* one block per collapsible group */
+  #levels.cx-unicode .g-unicode .cw,
+  #levels.cx-ascii .g-ascii .cw,
+  #levels.cx-bravura .g-bravura .cw,
+  #levels.cx-fifths .g-fifths .cw,
+  #levels.cx-representing .g-representing .cw,
+  #levels.cx-error .g-error .cw { max-width: 0; opacity: 0; }
+  #levels.cx-unicode .g-unicode .cd,
+  #levels.cx-ascii .g-ascii .cd,
+  #levels.cx-bravura .g-bravura .cd,
+  #levels.cx-fifths .g-fifths .cd,
+  #levels.cx-representing .g-representing .cd,
+  #levels.cx-error .g-error .cd { max-width: var(--w, 1em); opacity: 1; }
+  #levels.cx-unicode td.g-unicode,
+  #levels.cx-ascii td.g-ascii,
+  #levels.cx-bravura td.g-bravura,
+  #levels.cx-fifths td.g-fifths,
+  #levels.cx-representing td.g-representing,
+  #levels.cx-error td.g-error { padding-left: 10px; padding-right: 10px; }
+  #levels.cx-unicode .g-unicode .copy,
+  #levels.cx-ascii .g-ascii .copy,
+  #levels.cx-bravura .g-bravura .copy,
+  #levels.cx-fifths .g-fifths .copy,
+  #levels.cx-representing .g-representing .copy,
+  #levels.cx-error .g-error .copy { display: none; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    button, input, .chev, .tog, .tip::after { transition: transform 150ms, opacity 130ms, background 120ms, border-color 120ms, color 120ms; }
+    .cw, .cd { transition: max-width 300ms cubic-bezier(.4, 0, .2, 1), opacity 220ms; }
+    td { transition: padding 300ms cubic-bezier(.4, 0, .2, 1); }
+  }
+  @media (max-width: 680px) {
+    .wrap { padding: 26px 14px 44px; }
+    .panel { padding: 18px 15px 20px; }
+    .reset-wrap { margin-left: 0; }
+    .ratio-block, .vec-wrap { padding-bottom: 0; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Sagittal Standard Just Intonation Notation Calculator</h1>
+    <p class="sub">Enter a pitch as a ratio or as its prime exponents, choose the
+      Pythagorean nominal that is your 1/1, choose your preferred Sagittal flavor and
+      precision level.</p>
+  </header>
+
+  <div class="panel">
+    <div class="row row-top">
+      <div class="ratio-block">
+        <p class="field-label">Ratio</p>
+        <div class="ratio">
+          <div class="frac">
+            <input id="num" inputmode="numeric" value="1" aria-label="Numerator">
+            <span class="vinculum" aria-hidden="true"></span>
+            <input id="den" inputmode="numeric" value="1" aria-label="Denominator">
+          </div>
+        </div>
+      </div>
+      <div class="vec-block">
+        <p class="cents"><span id="cents11">0.000</span>&cent;</p>
+        <div class="vec-wrap">
+          <div class="vec" id="vec"></div>
+          <button class="add-prime" id="add-prime" type="button"
+                  aria-label="Add the next prime">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="row row-bottom">
+      <div>
+        <p class="field-label">Tonic (1/1)</p>
+        <div class="combo" id="nominal-combo">
+          <button type="button" class="combo-btn" id="nominal-btn" aria-haspopup="listbox"
+                  aria-expanded="false" aria-label="Pythagorean nominal for your tonic">
+            <span class="combo-val"></span><span class="combo-caret" aria-hidden="true">&#9662;</span>
+          </button>
+          <ul class="combo-list" id="nominal-list" role="listbox" hidden></ul>
+        </div>
+        <p class="hint">The Pythagorean nominal for your tonic<br>(from
+          <span class="acc">&#xE264;</span>F to <span class="acc">&#xE263;</span>B).</p>
+      </div>
+      <div>
+        <p class="field-label">Flavor</p>
+        <div class="checks">
+          <label><input type="checkbox" id="show-evo" checked><span>Evo</span></label>
+          <label><input type="checkbox" id="show-revo" checked><span>Revo</span></label>
+        </div>
+      </div>
+      <div class="reset-wrap">
+        <button class="reset" id="reset" type="button">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <p id="error-msg" hidden></p>
+  <div id="levels"></div>
+
+  <details class="level" id="diagram-card">
+    <summary>
+      <span class="chev"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="lv-head"><span class="lv-title">
+        <span class="lv-name">Precision Levels</span>
+        <span class="lv-kind">Diagram</span></span>
+        <span class="lv-meta">every symbol each level offers, laid out by the size of
+          the alteration it stands for &mdash; your pitch marked on it</span></span>
+    </summary>
+    <div class="diagram-body">
+      <div class="diagram-controls">
+        <label for="dg-zoom">Zoom</label>
+        <input type="range" id="dg-zoom" min="14" max="220" value="30" step="1"
+               aria-label="Diagram zoom, pixels per cent">
+        <span id="dg-zoom-val">30 px/&cent;</span>
+      </div>
+      <div class="diagram-scroll" id="dg-scroll"></div>
+      <p class="dg-readout" id="dg-readout"></p>
+    </div>
+  </details>
+
+  <footer>
+    <p>Port of the <em>Sagittal Standard JI Notation Calculator</em> spreadsheet
+      by George Secor and Dave Keenan &mdash;
+      <a href="http://forum.sagittal.org/viewtopic.php?t=86">forum.sagittal.org</a>.
+      The precision levels are visualized
+      <a href="http://sagittal.org/SagittalJI.gif">here</a>.</p>
+    <p>Sagittal and notehead glyphs are a subset of
+      <a href="https://github.com/steinbergmedia/bravura">Bravura</a>
+      &copy; Steinberg Media Technologies GmbH, SIL Open Font License 1.1, embedded in this page.</p>
+  </footer>
+</div>
+
+<script>%%DATA_JS%%</script>
+<script>%%CORE_JS%%</script>
+<script>
+"use strict";
+(() => {
+  const D = SAG_DATA;
+  const P = D.primes;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const CHEV = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">'
+    + '<path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" '
+    + 'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const COPY_ICON = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">'
+    + '<rect x="5.6" y="5.6" width="8.2" height="9" rx="1.5" fill="none" '
+    + 'stroke="currentColor" stroke-width="1.4"/>'
+    + '<path d="M10.6 3.4H3.7a1.3 1.3 0 0 0-1.3 1.3v7.6" fill="none" '
+    + 'stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+  const DONE_ICON = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">'
+    + '<path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" '
+    + 'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  const APOTOME = SAG.APOTOME;
+  // SMuFL accidentals, for spelling nominals with real symbols
+  const ACC_GLYPH = { bb: "", b: "", "": "", "#": "", x: "" };
+
+  const REPRESENT_TIP =
+    "The exact alteration, in cents, that this row's single-shaft Sagittal has to "
+    + "stand for — the distance from the plain Pythagorean nominal (after any sharp or "
+    + "flat) up or down to your pitch. The level then offers the nearest symbol it "
+    + "actually has, and the Error column is how far that symbol's own defined comma "
+    + "lands from this figure. (The spreadsheet's “Single-shaft Sagittals are "
+    + "Representing (¢)” column.)";
+
+  const LEVEL_TIPS = {
+    medium: "The medium precision level, whose maximum symbol set is the Athenian. "
+      + "From the Xenharmonikôn article: it is expected that the overwhelming majority "
+      + "of users will conclude that the Athenian JI symbol set is quite acceptable for "
+      + "their purposes, with higher precision symbol sets being necessary only for "
+      + "certain theoretical (or other special) applications.",
+    high: "The high precision level, whose maximum symbol set is the Promethean — the "
+      + "most precise level that needs no diacritics. Not recommended: Dave Keenan's "
+      + "guidance for this spreadsheet was that “the Promethean level is not "
+      + "recommended”. Use Medium for general purposes, or Ultra/Extreme when you "
+      + "genuinely need finer resolution.",
+    ultra: "The ultra precision level, whose maximum symbol set is the Herculean — the "
+      + "Promethean symbols extended with accent diacritics.",
+    extreme: "The extreme precision level, whose maximum symbol set is the Olympian, "
+      + "adding accents and breves (mina diacritics). Its symbol boundaries are defined "
+      + "on 809 divisions of the apotome (Magrathean) rather than its own 233, so that "
+      + "neighbouring commas such as 5C (80:81) and 41C (81:82) stay distinct.",
+  };
+
+  // The quoted resolution is apotome ÷ steps; the real boundaries come from the
+  // commas the symbols stand for, so state the actual spread alongside it.
+  function resolutionTip(m) {
+    const rows = D.bounds[m.level];
+    let lo = Infinity, hi = 0;
+    for (let i = 1; i < rows.length; i++) {
+      const g = rows[i][0] - rows[i - 1][0];
+      if (g < lo) lo = g;
+      if (g > hi) hi = g;
+    }
+    const name = m.label.replace(/\*+$/, "");
+    return "The " + name + " level's symbols are laid out on a " + m.steps
+      + "-fold equal division of the apotome (" + m.steps + "-EDA), and the figure "
+      + "given here is just that apotome, " + APOTOME.toFixed(3) + "¢, divided by "
+      + m.steps + " — one step of that division. It is marked approximate because the "
+      + "symbols are not in fact evenly spaced: each one is defined by the comma it "
+      + "represents, so the real gaps between neighbouring symbol boundaries run from "
+      + lo.toFixed(2) + "¢ to " + hi.toFixed(2) + "¢. Read it as the typical spacing; "
+      + "the Error column gives the exact miss on your pitch.";
+  }
+
+  // ---------- prime / exponent vector ----------
+  const vec = $("vec");
+  const expInputs = {};
+  const expCells = {};
+  for (const [text, cls] of [["Prime", "vec-lab-prime"], ["Exponent", "vec-lab-exp"]]) {
+    const el = document.createElement("p");
+    el.className = "field-label vec-lab " + cls;
+    el.textContent = text;
+    vec.appendChild(el);
+  }
+  for (const p of P) {
+    const lab = document.createElement("span");
+    lab.className = "p";
+    lab.textContent = p;
+    const inp = document.createElement("input");
+    inp.value = "0";
+    inp.inputMode = "numeric";
+    inp.setAttribute("aria-label", "Exponent of prime " + p);
+    vec.appendChild(lab);
+    vec.appendChild(inp);
+    expInputs[p] = inp;
+    expCells[p] = [lab, inp];
+  }
+
+  const DEFAULT_VISIBLE = P.indexOf(17) + 1;
+  let visible = DEFAULT_VISIBLE;
+
+  function setVisible(n) {
+    visible = Math.max(1, Math.min(P.length, n));
+    P.forEach((p, i) => {
+      const shown = i < visible;
+      for (const el of expCells[p]) el.hidden = !shown;
+      const removable = shown && i > 0;   // a monzo needs at least one slot
+      expCells[p][0].classList.toggle("removable", removable);
+      expCells[p][0].tabIndex = removable ? 0 : -1;
+      expCells[p][0].title = removable
+        ? "Remove prime " + p + (i < visible - 1 ? " and the primes above it" : "") : "";
+    });
+    const maxed = visible >= P.length;
+    $("add-prime").disabled = maxed;
+    $("add-prime").dataset.tip = maxed
+      ? "61 is as far as the spreadsheet's vector goes. It is already well past the "
+        + "notation's own reach — Extreme, the finest level, is only 47-limit — so "
+        + "anything above this would have no symbols to be notated with anyway."
+      : "Add prime " + P[visible] + " to the vector.";
+  }
+
+  function markDoomed(fromIdx, on) {
+    P.forEach((p, i) => {
+      const doomed = on && i >= fromIdx && i < visible;
+      for (const el of expCells[p]) el.classList.toggle("doomed", doomed);
+    });
+  }
+
+  function removeFrom(idx) {
+    if (idx < 1) return;
+    for (let i = idx; i < P.length; i++) expInputs[P[i]].value = "0";
+    markDoomed(idx, false);
+    setVisible(idx);
+    onVectorInput();
+  }
+
+  vec.addEventListener("mouseover", (e) => {
+    const lab = e.target.closest(".p.removable");
+    if (lab) markDoomed(P.indexOf(Number(lab.textContent)), true);
+  });
+  vec.addEventListener("mouseout", (e) => {
+    if (e.target.closest(".p.removable")) markDoomed(0, false);
+  });
+  vec.addEventListener("click", (e) => {
+    const lab = e.target.closest(".p.removable");
+    if (lab) removeFrom(P.indexOf(Number(lab.textContent)));
+  });
+  vec.addEventListener("keydown", (e) => {
+    const lab = e.target.closest(".p.removable");
+    if (lab && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      removeFrom(P.indexOf(Number(lab.textContent)));
+    }
+  });
+
+  // ---------- ratio ⇄ vector ----------
+  const bgcd = (a, b) => { while (b) { [a, b] = [b, a % b]; } return a; };
+
+  function vectorToRatio(exps) {
+    let n = 1n, d = 1n;
+    for (const p of P) {
+      const e = exps[p] | 0;
+      if (e > 0) n *= BigInt(p) ** BigInt(e);
+      else if (e < 0) d *= BigInt(p) ** BigInt(-e);
+    }
+    while (n >= d * 2n) d *= 2n;   // octave-reduce into [1, 2)
+    while (n < d) n *= 2n;
+    const g = bgcd(n, d);
+    return [n / g, d / g];
+  }
+
+  function factorRatio(n, d) {
+    const g = bgcd(n, d);
+    n /= g; d /= g;
+    while (n % 2n === 0n) n /= 2n;   // octave-equivalent: 2s are not notated
+    while (d % 2n === 0n) d /= 2n;
+    const exps = {};
+    for (const p of P) {
+      const bp = BigInt(p);
+      let e = 0;
+      while (n % bp === 0n) { n /= bp; e++; }
+      while (d % bp === 0n) { d /= bp; e--; }
+      exps[p] = e;
+    }
+    return { exps, rn: n, rd: d };
+  }
+
+  let residue = { n: 1, d: 1 };
+
+  function readExps() {
+    const exps = {};
+    let bad = false;
+    for (const p of P) {
+      const raw = expInputs[p].value.trim();
+      const v = raw === "" || raw === "-" ? 0 : Number(raw);
+      if (!Number.isFinite(v) || !Number.isInteger(v)) bad = true;
+      exps[p] = Number.isFinite(v) ? v : 0;
+      expInputs[p].classList.toggle("nonzero", exps[p] !== 0);
+    }
+    return { exps, bad };
+  }
+
+  function onVectorInput() {
+    const { exps, bad } = readExps();
+    residue = { n: 1, d: 1 };
+    if (!bad) {
+      const [n, d] = vectorToRatio(exps);
+      $("num").value = String(n);
+      $("den").value = String(d);
+    }
+    render();
+  }
+
+  function onRatioInput() {
+    const ns = $("num").value.trim(), ds = $("den").value.trim();
+    if (!/^\d+$/.test(ns) || !/^\d+$/.test(ds) || ds === "0" || ns === "0") {
+      render();
+      return;
+    }
+    const { exps, rn, rd } = factorRatio(BigInt(ns), BigInt(ds));
+    for (const p of P) expInputs[p].value = String(exps[p]);
+    let maxIdx = -1;
+    P.forEach((p, i) => { if (exps[p] !== 0) maxIdx = i; });
+    if (rn > 1n || rd > 1n) setVisible(P.length);
+    else setVisible(maxIdx >= 0 ? maxIdx + 1 : DEFAULT_VISIBLE);
+    residue = { n: Number(rn), d: Number(rd) };
+    readExps();
+    render();
+  }
+
+  // ---------- tonic combo box ----------
+  const NOMINALS = [];
+  for (let i = 0; i < D.fifthsString.length; i += 3) {
+    NOMINALS.push(D.fifthsString.slice(i, i + 3).trim());
+  }
+  const spellNominal = (name) => {
+    const letter = name.slice(-1);
+    const glyph = ACC_GLYPH[name.slice(0, -1)] || "";
+    return (glyph ? '<span class="acc">' + glyph + "</span>" : "") + letter;
+  };
+  let nominal = "D";
+  const comboBtn = $("nominal-btn");
+  const comboList = $("nominal-list");
+  const comboVal = comboBtn.querySelector(".combo-val");
+  let activeIdx = NOMINALS.indexOf(nominal);
+
+  NOMINALS.forEach((nm, i) => {
+    const li = document.createElement("li");
+    li.setAttribute("role", "option");
+    li.dataset.value = nm;
+    li.id = "nominal-opt-" + i;
+    li.innerHTML = spellNominal(nm);
+    comboList.appendChild(li);
+  });
+
+  // Size the popup to a whole number of rows — border-box means its padding and
+  // borders have to be added back, or the last row is left sliced.
+  function sizeComboList() {
+    const rowH = comboList.firstElementChild.getBoundingClientRect().height;
+    if (!rowH) return;
+    const cs = getComputedStyle(comboList);
+    const chrome = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)
+      + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+    const rows = Math.max(1, Math.floor((280 - chrome) / rowH));
+    comboList.style.maxHeight = (rows * rowH + chrome) + "px";
+  }
+
+  function paintCombo() {
+    comboVal.innerHTML = spellNominal(nominal);
+    [...comboList.children].forEach((li, i) => {
+      li.setAttribute("aria-selected", li.dataset.value === nominal ? "true" : "false");
+      li.classList.toggle("active", i === activeIdx);
+    });
+  }
+  function openCombo(open) {
+    comboList.hidden = !open;
+    comboBtn.setAttribute("aria-expanded", String(open));
+    if (open) {
+      sizeComboList();
+      activeIdx = NOMINALS.indexOf(nominal);
+      paintCombo();
+      comboList.children[activeIdx].scrollIntoView({ block: "nearest" });
+    }
+  }
+  function chooseNominal(nm) {
+    nominal = nm;
+    activeIdx = NOMINALS.indexOf(nm);
+    paintCombo();
+    openCombo(false);
+    render();
+  }
+  comboBtn.addEventListener("click", () => openCombo(comboList.hidden));
+  comboList.addEventListener("click", (e) => {
+    const li = e.target.closest("li");
+    if (li) chooseNominal(li.dataset.value);
+  });
+  comboBtn.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (comboList.hidden) { openCombo(true); return; }
+      activeIdx = Math.max(0, Math.min(NOMINALS.length - 1,
+        activeIdx + (e.key === "ArrowDown" ? 1 : -1)));
+      paintCombo();
+      comboList.children[activeIdx].scrollIntoView({ block: "nearest" });
+    } else if (e.key === "Enter" && !comboList.hidden) {
+      e.preventDefault();
+      chooseNominal(NOMINALS[activeIdx]);
+    } else if (e.key === "Escape") {
+      openCombo(false);
+    }
+  });
+  document.addEventListener("click", (e) => {
+    if (!comboList.hidden && !e.target.closest("#nominal-combo")) openCombo(false);
+  });
+
+  const fmt3 = (v) => (typeof v === "number" ? v.toFixed(3) : "");
+  const fmtInt = (v) => (typeof v === "number" ? String(v) : "");
+  const diacritics = (d) => (d === "none" ? "no diacritics" : d);
+  const codepoints = (s) => [...s].filter((c) => c !== " ")
+    .map((c) => "U+" + c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0"))
+    .join(" ");
+
+  // ---------- column model ----------
+  const GROUPS = [
+    { key: "unicode", name: "Unicode", variants: true, cls: "uni",
+      tip: "The SMuFL codepoints of the symbols, for pasting into anything that "
+        + "understands them.",
+      value: (row, lv, v) => codepoints(lv[v + "Unicode"]) },
+    { key: "ascii", name: "ASCII", variants: true, cls: "mono",
+      tip: "Sagittal's plain-text shorthand, as used on the forum and in Scala.",
+      value: (row, lv, v) => lv[v + "Ascii"] },
+    { key: "bravura", name: "Bravura", variants: true, cls: "brav",
+      tip: "The symbols themselves, drawn in Bravura — the Sagittal-corrected build "
+        + "of it is embedded in this page, so nothing needs installing.",
+      value: (row, lv, v) => lv[v + "Unicode"] },
+    { key: "fifths", name: "Fifths Count", variants: false, cls: "num",
+      tip: "How many fifths along the chain of fifths this nominal sits from your "
+        + "tonic — a rough measure of how far afield the spelling is.",
+      value: (row) => fmtInt(row.fifthsCount) },
+    { key: "representing", name: "Representing (¢)", variants: false, cls: "num dim",
+      tip: REPRESENT_TIP,
+      value: (row) => (row.alteration === 0 || row.alteration === ""
+        ? "" : fmt3(row.alteration)) },
+    { key: "error", name: "Error (¢)", variants: false, cls: "num dim",
+      tip: "How far this level's nearest symbol lands from the alteration the row "
+        + "actually needs. Zero means the symbol's own comma is exactly your pitch.",
+      value: (row, lv) => fmt3(lv.error) },
+  ];
+  const collapsed = new Set();
+  const show = { evo: true, revo: true };
+  const variantsOn = () => ["evo", "revo"].filter((v) => show[v]);
+
+  const collapseHint = (g) =>
+    collapsed.has(g.key) ? "Click to show this column again." : "Click to collapse it.";
+
+  // The column set never changes when a group collapses — collapsing is a CSS
+  // state, so the widths can animate instead of the table being rebuilt.
+  function columns() {
+    const cols = [];
+    for (const g of GROUPS) {
+      if (!g.variants) { cols.push({ g, variant: null, only: true }); continue; }
+      const vs = variantsOn();
+      vs.forEach((v, i) => cols.push({ g, variant: v, first: i === 0, span: vs.length }));
+    }
+    return cols;
+  }
+
+  // ---------- copy-on-hover ----------
+  function copyText(t) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(t).catch(() => fallbackCopy(t));
+    }
+    return fallbackCopy(t);
+  }
+  function fallbackCopy(t) {
+    const ta = document.createElement("textarea");
+    ta.value = t;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch (err) { /* nothing else to try */ }
+    document.body.removeChild(ta);
+    return Promise.resolve();
+  }
+  function cell(text, cls, groupStart) {
+    const el = document.createElement("td");
+    const v = document.createElement("span");
+    v.className = "cw cv";
+    v.textContent = text;
+    el.appendChild(v);
+    if (groupStart) {                      // the dash that stands in when collapsed
+      const d = document.createElement("span");
+      d.className = "cd";
+      d.textContent = "-";
+      el.appendChild(d);
+    }
+    if (String(text).trim() === "") {      // nothing to show, and nothing to copy
+      v.textContent = "-";
+      v.className = "cw cv ph";
+      el.className = cls || "";
+      return el;
+    }
+    el.className = "cp " + (cls || "");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "copy";
+    b.title = "Copy";
+    b.setAttribute("aria-label", "Copy " + text);
+    b.innerHTML = COPY_ICON;
+    b.addEventListener("click", () => {
+      copyText(v.textContent).then(() => {
+        b.innerHTML = DONE_ICON;
+        b.classList.add("done");
+        setTimeout(() => { b.innerHTML = COPY_ICON; b.classList.remove("done"); }, 1100);
+      });
+    });
+    el.appendChild(b);
+    return el;
+  }
+
+  // ---------- level cards ----------
+  const levelsRoot = $("levels");
+  const levelParts = {};
+  for (const m of D.levels) {
+    const det = document.createElement("details");
+    det.className = "level";
+    det.dataset.level = m.level;
+    if (m.level === "medium") det.open = true;
+
+    const name = m.label.replace(/\*+$/, "");
+    const sum = document.createElement("summary");
+    sum.innerHTML =
+      '<span class="chev">' + CHEV + "</span>"
+      + '<span class="lv-head"><span class="lv-title">'
+      + '<span class="lv-name tip" tabindex="0" data-tip="' + esc(LEVEL_TIPS[m.level])
+      + '">' + name + "</span>"
+      + '<span class="lv-kind">Precision Level</span></span>'
+      + '<span class="lv-meta">maximum symbol set <b>' + m.symbolSet + "</b> · <b>"
+      + m.limit + "</b>-limit · "
+      + '<span class="tip" tabindex="0" data-tip="' + esc(resolutionTip(m))
+      + '">resolution ≈ <b>' + m.resolution + "¢</b></span> · includes <b>"
+      + diacritics(m.diacritics) + "</b></span></span>"
+      + '<span class="lv-preview" aria-hidden="true"></span>';
+
+    const wrap = document.createElement("div");
+    wrap.className = "tbl-wrap";
+    const table = document.createElement("table");
+    wrap.appendChild(table);
+    det.appendChild(sum);
+    det.appendChild(wrap);
+    det.addEventListener("toggle", () => {
+      if (det.open) measureWidths(table);   // a closed card has no layout to measure
+    });
+    levelsRoot.appendChild(det);
+    levelParts[m.level] = { table, preview: sum.querySelector(".lv-preview") };
+  }
+
+  levelsRoot.addEventListener("click", (e) => {
+    if (e.target.closest("summary") && e.target.closest(".tip")) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
+
+  function buildHead(cols) {
+    const thead = document.createElement("thead");
+    const needSub = variantsOn().length > 1;
+    const top = document.createElement("tr");
+    let i = 0;
+    while (i < cols.length) {
+      const c = cols[i];
+      const span = c.variant ? c.span : 1;
+      const th = document.createElement("th");
+      const classes = ["grouphead", "gh-" + c.g.key];
+      if (i > 0) classes.push("grp");
+      // variant groups stay on the top row either way, so the label never moves
+      if (needSub && !c.g.variants) th.rowSpan = 2;
+      else if (needSub) classes.push("underline");
+      if (span > 1) th.colSpan = span;
+      th.className = classes.join(" ");
+      th.innerHTML = '<span class="tog" aria-hidden="true"></span>'
+        + '<span class="tip" tabindex="0" data-tip="'
+        + esc(c.g.tip + " " + collapseHint(c.g)) + '">' + c.g.name + "</span>";
+      th.addEventListener("click", () => toggleGroup(c.g));
+      top.appendChild(th);
+      i += span;
+    }
+    thead.appendChild(top);
+    if (needSub) {
+      const sub = document.createElement("tr");
+      sub.className = "subhead";
+      cols.forEach((c, idx) => {
+        if (!c.g.variants) return;              // those span both rows
+        const th = document.createElement("th");
+        th.className = "g-" + c.g.key + (idx > 0 && c.first ? " grp" : "");
+        const w = document.createElement("span");
+        w.className = "cw";
+        w.textContent = c.variant === "evo" ? "Evo" : "Revo";
+        th.appendChild(w);
+        sub.appendChild(th);
+      });
+      thead.appendChild(sub);
+    }
+    return thead;
+  }
+
+  // Collapsing is a class flip, so the widths animate; only the +/− needs redrawing.
+  function paintToggles() {
+    for (const g of GROUPS) {
+      const open = !collapsed.has(g.key);
+      levelsRoot.querySelectorAll("th.gh-" + g.key).forEach((th) => {
+        th.querySelector(".tog").textContent = open ? "−" : "+";
+        th.querySelector(".tip").dataset.tip = g.tip + " " + collapseHint(g);
+      });
+    }
+  }
+  function toggleGroup(g) {
+    if (collapsed.has(g.key)) collapsed.delete(g.key);
+    else collapsed.add(g.key);
+    levelsRoot.classList.toggle("cx-" + g.key, collapsed.has(g.key));
+    paintToggles();
+  }
+
+  // Each shrinkable span needs its natural width pinned so the transition has
+  // somewhere to travel from; only laid-out (open) tables can be measured.
+  function measureWidths(table) {
+    const spans = table.querySelectorAll(".cw, .cd");
+    if (!spans.length || !table.offsetParent) return;
+    table.classList.add("measuring");
+    spans.forEach((s) => { s.style.maxWidth = "none"; });
+    const widths = [...spans].map((s) => s.getBoundingClientRect().width);
+    spans.forEach((s, i) => {
+      s.style.maxWidth = "";
+      s.style.setProperty("--w", Math.ceil(widths[i]) + "px");
+    });
+    void table.offsetHeight;
+    table.classList.remove("measuring");
+  }
+
+  // The simplest offer: fewest sharps/flats, then the smallest alteration.
+  const accidentals = (sf) => (sf === "" ? 0 : (sf.length > 1 ? 2 : 1));
+  function simplestRow(rows) {
+    return rows.reduce((best, r) => {
+      if (!best) return r;
+      const a = accidentals(r.sharpFlat), b = accidentals(best.sharpFlat);
+      if (a !== b) return a < b ? r : best;
+      return Math.abs(r.alteration) < Math.abs(best.alteration) ? r : best;
+    }, null);
+  }
+
+  function render() {
+    const { exps, bad } = readExps();
+    const ns = $("num").value.trim(), ds = $("den").value.trim();
+    let problem = null;
+    if (bad) problem = "Exponents must be whole numbers.";
+    else if (!/^\d+$/.test(ns) || !/^\d+$/.test(ds)) problem = "The ratio must be two whole numbers.";
+    else if (ns === "0" || ds === "0") problem = "The ratio's terms must be greater than zero.";
+    else if (!Number.isSafeInteger(residue.n) || !Number.isSafeInteger(residue.d))
+      problem = "That ratio is too large to factor exactly.";
+
+    const res = problem ? { error: problem }
+      : SAG.compute({ exps, num: residue.n, den: residue.d, nominal });
+
+    const err = $("error-msg");
+    const showErr = Boolean(res.error);
+    err.hidden = !showErr;
+    levelsRoot.style.display = showErr ? "none" : "";
+    if (showErr) {
+      err.textContent = res.error;
+      $("cents11").textContent = "—";
+      return;
+    }
+
+    $("cents11").textContent = fmt3(res.centsAbove11);
+
+    const rows = res.rows.filter((r) => r.letter !== "");
+    const cols = columns();
+    const simplest = simplestRow(rows);
+
+    DG.marks = rows.map((r) => r.alteration)
+      .filter((a) => typeof a === "number" && a !== 0);
+    if (DG.card.open) drawDiagram();
+
+    for (const m of D.levels) {
+      const part = levelParts[m.level];
+      const both = variantsOn().length > 1;
+      part.preview.innerHTML = simplest
+        ? variantsOn().map((v) => '<span class="pv">'
+          + (both ? '<span class="pv-lab">' + (v === "evo" ? "Evo" : "Revo") + "</span>" : "")
+          + '<span class="pv-gl">'
+          + esc(simplest.levels[m.level][v + "Unicode"]) + "</span></span>").join("")
+        : "";
+
+      part.table.textContent = "";
+      part.table.appendChild(buildHead(cols));
+      const tbody = document.createElement("tbody");
+      for (const row of rows) {
+        const lv = row.levels[m.level];
+        const tr = document.createElement("tr");
+        tr.className = lv.error === 0 ? "exact" : "approx";
+        cols.forEach((c, idx) => {
+          const groupStart = Boolean(c.only || c.first);
+          tr.appendChild(cell(c.g.value(row, lv, c.variant),
+            c.g.cls + " g-" + c.g.key + (idx > 0 && groupStart ? " grp" : ""),
+            groupStart));
+        });
+        tbody.appendChild(tr);
+      }
+      part.table.appendChild(tbody);
+      measureWidths(part.table);
+    }
+    paintToggles();
+  }
+
+
+  // ---------- precision levels diagram ----------
+  // Drawn live from the same boundary/comma/key tables the calculator itself
+  // uses, so what you see is exactly what it would offer you.
+  const DG = {
+    scroll: $("dg-scroll"),
+    zoom: $("dg-zoom"),
+    zoomVal: $("dg-zoom-val"),
+    readout: $("dg-readout"),
+    card: $("diagram-card"),
+    band: 74,
+    padL: 62,
+    padT: 26,
+    marks: [],
+  };
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const svgEl = (name, attrs, text) => {
+    const el = document.createElementNS(SVGNS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (text !== undefined) el.textContent = text;
+    return el;
+  };
+  const DG_MAX_CENTS = SAG.CENTS_MAX;
+
+  function zoneFor(level, cents) {
+    const rows = D.bounds[level];
+    let lo = 0;
+    for (let i = 0; i < rows.length; i++) if (rows[i][0] <= cents) lo = i;
+    return lo;
+  }
+
+  function drawDiagram() {
+    const pxPerCent = Number(DG.zoom.value);
+    DG.zoomVal.textContent = pxPerCent + " px/¢";
+    const width = DG.padL + DG_MAX_CENTS * pxPerCent + 24;
+    const height = DG.padT + D.levels.length * DG.band + 8;
+    const svg = svgEl("svg", {
+      width: Math.round(width), height,
+      viewBox: `0 0 ${Math.round(width)} ${height}`,
+      role: "img",
+      "aria-label": "Sagittal symbols at each precision level, by alteration size",
+    });
+    const x = (c) => DG.padL + c * pxPerCent;
+
+    // cents ruler
+    const tickStep = pxPerCent >= 90 ? 1 : pxPerCent >= 40 ? 2 : 5;
+    for (let c = 0; c <= DG_MAX_CENTS; c += tickStep) {
+      svg.appendChild(svgEl("line", { class: "dg-tick-line", x1: x(c), x2: x(c),
+        y1: DG.padT - 6, y2: height - 8 }));
+      svg.appendChild(svgEl("text", { class: "dg-tick", x: x(c), y: DG.padT - 10 },
+        c + "¢"));
+    }
+
+    D.levels.forEach((m, i) => {
+      const top = DG.padT + i * DG.band;
+      const mid = top + DG.band / 2;
+      const rows = D.bounds[m.level];
+      svg.appendChild(svgEl("rect", { class: "dg-band", x: DG.padL, y: top + 6,
+        width: DG_MAX_CENTS * pxPerCent, height: DG.band - 14, rx: 4 }));
+      svg.appendChild(svgEl("text", { class: "dg-level", x: 8, y: mid + 3 },
+        m.label.replace(/\*+$/, "")));
+
+      // the zone holding the current pitch, per level
+      const hot = new Set(DG.marks.map((c) => zoneFor(m.level, Math.abs(c))));
+
+      rows.forEach(([lower, key], idx) => {
+        const upper = idx + 1 < rows.length ? rows[idx + 1][0] : DG_MAX_CENTS;
+        if (hot.has(idx)) {
+          svg.appendChild(svgEl("rect", { class: "dg-zone on", x: x(Math.max(lower, 0)),
+            y: top + 6, width: Math.max(0, x(upper) - x(Math.max(lower, 0))),
+            height: DG.band - 14, rx: 3 }));
+        }
+        if (lower > 0) {
+          svg.appendChild(svgEl("line", { class: "dg-bound", x1: x(lower), x2: x(lower),
+            y1: top + 6, y2: top + DG.band - 8 }));
+        }
+        const comma = D.commas[key];
+        if (!comma) return;                       // key 0: the unaltered zone
+        const cx = x(comma.cents);
+        const glyph = (D.key[key] || ["", "", "", ""])[show.evo ? 2 : 3];
+        svg.appendChild(svgEl("circle", { class: "dg-dot", cx, cy: mid - 16, r: 1.8 }));
+        const sym = svgEl("text", {
+          class: "dg-sym" + (hot.has(idx) ? " on" : ""),
+          x: cx, y: mid + 12, "font-size": "26px",
+        }, glyph);
+        svg.appendChild(sym);
+        const hit = svgEl("rect", { class: "dg-hit", x: cx - 9, y: top + 6,
+          width: 18, height: DG.band - 14 });
+        const label = `<b>${comma.name}</b> · ${comma.num}/${comma.den} · `
+          + `${comma.cents.toFixed(3)}¢ · ${m.label.replace(/\*+$/, "")} and finer`;
+        hit.addEventListener("mouseenter", () => { DG.readout.innerHTML = label; });
+        hit.addEventListener("focus", () => { DG.readout.innerHTML = label; });
+        hit.setAttribute("tabindex", "0");
+        svg.insertBefore(hit, sym);
+      });
+    });
+
+    // the alterations the current pitch actually needs
+    DG.marks.forEach((cents) => {
+      const cx = x(Math.abs(cents));
+      svg.appendChild(svgEl("line", { class: "dg-mark", x1: cx, x2: cx,
+        y1: DG.padT - 4, y2: height - 8 }));
+      svg.appendChild(svgEl("text", { class: "dg-mark-lab", x: cx + 4, y: DG.padT + 8 },
+        (cents > 0 ? "+" : "−") + Math.abs(cents).toFixed(3) + "¢"));
+    });
+
+    DG.scroll.textContent = "";
+    DG.scroll.appendChild(svg);
+  }
+
+  DG.zoom.addEventListener("input", drawDiagram);
+  DG.card.addEventListener("toggle", () => { if (DG.card.open) drawDiagram(); });
+
+  // ---------- wiring ----------
+  for (const p of P) expInputs[p].addEventListener("input", onVectorInput);
+  $("num").addEventListener("input", onRatioInput);
+  $("den").addEventListener("input", onRatioInput);
+  $("add-prime").addEventListener("click", () => setVisible(visible + 1));
+  function paintLocks() {
+    $("show-evo").classList.toggle("locked", show.evo && !show.revo);
+    $("show-revo").classList.toggle("locked", show.revo && !show.evo);
+  }
+
+  for (const [id, key] of [["show-evo", "evo"], ["show-revo", "revo"]]) {
+    // not disabled — a greyed box reads as broken; the last one simply refuses
+    $(id).addEventListener("change", () => {
+      show[key] = $(id).checked;
+      if (!show.evo && !show.revo) { show[key] = true; $(id).checked = true; }
+      paintLocks();
+      render();
+    });
+  }
+  $("reset").addEventListener("click", () => {
+    for (const p of P) expInputs[p].value = "0";
+    $("num").value = "1";
+    $("den").value = "1";
+    nominal = "D";
+    paintCombo();
+    residue = { n: 1, d: 1 };
+    setVisible(DEFAULT_VISIBLE);
+    render();
+  });
+
+  paintCombo();
+  paintLocks();
+  setVisible(DEFAULT_VISIBLE);
+  render();
+
+  // the music font changes every row height, so re-measure once it has landed
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      sizeComboList();
+      for (const m of D.levels) measureWidths(levelParts[m.level].table);
+    });
+  }
+})();
+</script>

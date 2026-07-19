@@ -1,0 +1,1641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>Sagittal Standard Just Intonation Notation Calculator</title>
+<!--
+  Web app port of the "Sagittal Standard JI Notation Calculator" spreadsheet
+  (forum.sagittal.org, topic t=86). All computation is a direct port of the
+  workbook's formulas; the boundary/comma/key tables are extracted verbatim.
+
+  Embedded font: subset of Bravura, Copyright © Steinberg Media Technologies
+  GmbH, licensed under the SIL Open Font License, Version 1.1
+  (https://scripts.sil.org/OFL). The subset uses the family name
+  "SagittalGlyphs" per the OFL's Reserved Font Name rules.
+-->
+<style>
+  @font-face {
+    font-family: "SagittalGlyphs";
+    src: url(data:font/woff2;base64,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) format("woff2");
+    font-display: block;
+  }
+  :root {
+    --bg: #faf9f6;
+    --card: #ffffff;
+    --raise: #fbfaf7;
+    --ink: #211f1b;
+    --muted: #6e6862;
+    --line: #e5e1d8;
+    --line-soft: #efece5;
+    --accent: #a63a2b;
+    --accent-soft: #f3e4df;
+    --glyph: #16130f;
+    --input-bg: #ffffff;
+    --thead: #857e75;
+    --tip-bg: #2c2823;
+    --tip-fg: #f5f1e9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171614;
+      --card: #1f1d1a;
+      --raise: #24211d;
+      --ink: #eae6df;
+      --muted: #9b948a;
+      --line: #34302a;
+      --line-soft: #282521;
+      --accent: #e08a72;
+      --accent-soft: #3a2822;
+      --glyph: #f3efe7;
+      --input-bg: #26231f;
+      --thead: #8d867c;
+      --tip-bg: #3a352e;
+      --tip-fg: #f2eee6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171614;
+    --card: #1f1d1a;
+    --raise: #24211d;
+    --ink: #eae6df;
+    --muted: #9b948a;
+    --line: #34302a;
+    --line-soft: #282521;
+    --accent: #e08a72;
+    --accent-soft: #3a2822;
+    --glyph: #f3efe7;
+    --input-bg: #26231f;
+    --thead: #8d867c;
+    --tip-bg: #3a352e;
+    --tip-fg: #f2eee6;
+  }
+  :root[data-theme="light"] {
+    --bg: #faf9f6;
+    --card: #ffffff;
+    --raise: #fbfaf7;
+    --ink: #211f1b;
+    --muted: #6e6862;
+    --line: #e5e1d8;
+    --line-soft: #efece5;
+    --accent: #a63a2b;
+    --accent-soft: #f3e4df;
+    --glyph: #16130f;
+    --input-bg: #ffffff;
+    --thead: #857e75;
+    --tip-bg: #2c2823;
+    --tip-fg: #f5f1e9;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 38px 22px 60px; }
+
+  .mono { font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace; }
+  /* Bravura centres accidentals on the staff, so inline use needs re-centring */
+  .acc {
+    font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
+    font-size: 1.6em;
+    line-height: 0;
+    vertical-align: middle;
+  }
+
+  header { margin-bottom: 26px; }
+  header h1 {
+    font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-size: clamp(25px, 3.6vw, 34px);
+    font-weight: 600;
+    line-height: 1.14;
+    margin: 0 0 9px;
+    text-wrap: balance;
+  }
+  header .sub { color: var(--muted); font-size: 13px; margin: 0; }
+
+  /* ---------- input panel ---------- */
+  .panel {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px 26px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 22px 38px; }
+  .row-top { align-items: flex-end; }
+  .row-bottom { align-items: flex-start; }
+  .field-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 10px;
+    white-space: nowrap;
+  }
+  .hint { font-size: 12.5px; line-height: 1.5; color: var(--muted); margin: 9px 0 0; }
+
+  /* the ratio's vinculum and the exponent row share a centre line */
+  .ratio-block { padding-bottom: 0; }
+  .ratio-block .field-label { text-align: center; }
+  .ratio .frac { display: inline-flex; flex-direction: column; gap: 5px; }
+  .ratio input { width: 104px; }
+  .ratio .vinculum { height: 1.5px; background: var(--muted); }
+
+  input, select {
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    background: var(--input-bg);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 6px 4px;
+    text-align: center;
+  }
+  input:focus-visible, button:focus-visible,
+  .tip:focus-visible, .p:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* the pitch's size, sitting above the vector rather than spelled out */
+  .vec-block { display: flex; flex-direction: column; min-width: 0; }
+  .cents {
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    margin: 0 0 9px 84px;
+    height: 17px;
+  }
+
+  /* prime / exponent vector */
+  .vec-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; padding-bottom: 21px; }
+  .vec {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 2px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .vec::-webkit-scrollbar { display: none; }
+  .vec .vec-lab { padding-right: 8px; text-align: right; margin: 0; }
+  .vec .vec-lab-prime { align-self: end; }
+  .vec .vec-lab-exp { align-self: center; }
+  .vec .p {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    border-radius: 4px;
+    align-self: end;
+  }
+  .vec .p.removable { cursor: pointer; }
+  .vec .p.removable:hover { color: var(--accent); }
+  .vec .doomed { color: var(--accent); text-decoration: line-through; }
+  .vec input.doomed {
+    text-decoration: none;
+    border-color: var(--accent);
+    border-style: dashed;
+    color: var(--accent);
+    opacity: 0.55;
+  }
+  .vec input { width: 36px; color: var(--muted); }
+  .vec input.nonzero { color: var(--ink); font-weight: 700; }
+  button.add-prime {
+    flex: none;
+    align-self: end;
+    width: 28px;
+    height: 31px;
+    font: inherit;
+    font-size: 17px;
+    line-height: 1;
+    color: var(--muted);
+    background: none;
+    border: 1px dashed var(--line);
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button.add-prime:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+  button.add-prime:disabled { opacity: 0.4; cursor: help; }
+  button.add-prime { position: relative; }
+  th.grouphead .tip { cursor: pointer; border-bottom: none; }
+  th.grouphead:hover .tip { border-bottom: 1px dotted currentColor; }
+
+  /* tonic combo box (native selects cannot render the embedded font) */
+  .combo { position: relative; display: inline-block; }
+  .combo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 96px;
+    font: inherit;
+    color: var(--ink);
+    background: var(--input-bg);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 7px 10px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .combo-caret { color: var(--muted); font-size: 10px; line-height: 1; }
+  /* a zero line-height would let the glyph spill past its row and add phantom
+     scroll height to the popup */
+  .combo-list .acc, .combo-val .acc { font-size: 1.45em; line-height: 1; }
+  .combo-list {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 4px);
+    left: 0;
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    max-height: 260px;
+    overflow-y: auto;
+    min-width: 100%;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  }
+  /* fixed-height rows: the accidental glyphs are taller than the letters, and
+     uneven rows leave the popup with a stray strip of scrollable nothing */
+  .combo-list li {
+    display: flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .combo-list li[aria-selected="true"] { background: var(--line-soft); font-weight: 600; }
+  .combo-list li.active { background: var(--accent-soft); }
+
+  .checks { display: flex; gap: 16px; padding-top: 6px; }
+  .checks label { display: inline-flex; align-items: center; gap: 6px; font-size: 14px;
+                  color: var(--muted); cursor: pointer; }
+  .checks input { width: auto; accent-color: var(--ink); cursor: pointer; }
+  /* the last one checked cannot be switched off, and should look it */
+  .checks input.locked { accent-color: var(--muted); cursor: default; }
+  .checks label:has(input.locked) { cursor: default; }
+
+  .reset-wrap { position: absolute; right: 24px; bottom: 20px; }
+  button.reset {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    background: none;
+    border: 1px solid var(--muted);
+    border-radius: 5px;
+    padding: 8px 18px;
+    cursor: pointer;
+  }
+  button.reset:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--card);
+  }
+
+  #error-msg { color: var(--accent); font-weight: 600; margin: 26px 2px; }
+
+  /* ---------- tooltips ---------- */
+  .tip { position: relative; cursor: help; border-bottom: 1px dotted currentColor; }
+  .tip::after, button.add-prime[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 0;
+    top: calc(100% + 9px);
+    width: max-content;
+    max-width: min(420px, 78vw);
+    background: var(--tip-bg);
+    color: var(--tip-fg);
+    padding: 10px 13px;
+    border-radius: 7px;
+    font: 400 12.5px/1.55 "Segoe UI", system-ui, sans-serif;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: normal;
+    text-align: left;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+    opacity: 0;
+    visibility: hidden;
+    z-index: 30;
+  }
+  .tip:hover::after, .tip:focus-visible::after,
+  button.add-prime:hover::after, button.add-prime:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+  }
+  button.add-prime::after { left: auto; right: 0; }
+  th .tip::after { left: auto; right: 0; }
+
+  /* ---------- precision levels ---------- */
+  #levels { display: flex; flex-direction: column; gap: 12px; margin-top: 26px; }
+  .level { border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  .level > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 20px;
+    border-radius: 9px;
+  }
+  .level > summary::-webkit-details-marker { display: none; }
+  .level > summary:hover { background: var(--raise); }
+  .chev { flex: none; display: inline-flex; color: var(--muted); }
+  .level[open] .chev { transform: rotate(90deg); }
+  .lv-head { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .lv-title { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  .lv-name {
+    font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .lv-kind, .lv-meta { font-size: 12.5px; color: var(--muted); }
+  .lv-meta { font-variant-numeric: tabular-nums; }
+  .lv-meta b { color: var(--ink); font-weight: 600; }
+  .lv-preview {
+    margin-left: auto;
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-left: 16px;
+  }
+  .pv { display: inline-flex; align-items: center; gap: 8px; }
+  .pv-lab { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .pv-gl {
+    font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
+    font-size: 50px;
+    line-height: 1;
+    color: var(--glyph);
+  }
+  .level[open] > summary .lv-preview { display: none; }
+  .level[open] > summary { border-bottom: 1px solid var(--line); border-radius: 9px 9px 0 0; }
+
+  /* ---------- precision levels diagram ---------- */
+  .diagram-body { padding: 4px 20px 18px; }
+  .diagram-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+    padding: 8px 0 12px;
+  }
+  .diagram-controls input[type=range] { width: 190px; accent-color: var(--ink); }
+  .diagram-scroll { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+  .diagram-scroll svg { display: block; }
+  .dg-band { fill: var(--raise); }
+  .dg-rule { stroke: var(--line); stroke-width: 1; }
+  .dg-bound { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 3; }
+  .dg-zone.on { fill: var(--accent-soft); }
+  .dg-dot { fill: var(--muted); }
+  .dg-sym {
+    font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
+    fill: var(--glyph);
+    text-anchor: middle;
+  }
+  .dg-sym.on { fill: var(--accent); }
+  .dg-name {
+    font: 10px "Segoe UI", system-ui, sans-serif;
+    fill: var(--muted);
+    text-anchor: middle;
+  }
+  .dg-level {
+    font: 700 10px "Segoe UI", system-ui, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    fill: var(--thead);
+  }
+  .dg-tick { font: 10px "Segoe UI", system-ui, sans-serif; fill: var(--muted); text-anchor: middle; }
+  .dg-tick-line { stroke: var(--line); stroke-width: 1; }
+  .dg-mark { stroke: var(--accent); stroke-width: 1.5; }
+  .dg-mark-lab { font: 600 10px "Segoe UI", system-ui, sans-serif; fill: var(--accent); }
+  .dg-hit { fill: transparent; cursor: pointer; }
+  .dg-hit:hover + .dg-sym, .dg-sym:hover { fill: var(--accent); }
+  .dg-readout {
+    min-height: 20px;
+    font-size: 12.5px;
+    color: var(--muted);
+    padding-top: 8px;
+  }
+  .dg-readout b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- results table ---------- */
+  .tbl-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    border-radius: 0 0 9px 9px;
+  }
+  .tbl-wrap::-webkit-scrollbar { display: none; }
+  table { border-collapse: collapse; width: 100%; table-layout: auto; }
+  th, td { text-align: right; }
+  th {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--thead);
+    padding: 9px 12px 7px;
+    vertical-align: bottom;
+  }
+  th.grouphead { cursor: pointer; user-select: none; }
+  th.grouphead:hover { color: var(--accent); }
+  .tog {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    margin-right: 7px;
+    vertical-align: -2px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--muted);
+    background: var(--raise);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+  }
+  th.grouphead:hover .tog {
+    color: var(--card);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  th.underline { border-bottom: 1px solid var(--line-soft); }
+  th.collapsed { padding-left: 5px; padding-right: 5px; }
+  thead tr.subhead th { padding-top: 4px; padding-bottom: 8px; font-weight: 600; }
+  thead { border-bottom: 1px solid var(--line); }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.grp, th.grp { border-left: 1px solid var(--line-soft); }
+  td.brav {
+    font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
+    font-size: 57px;
+    line-height: 1;
+    color: var(--glyph);
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+  td.uni {
+    font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  td.num { font-variant-numeric: tabular-nums; }
+  td.dim { color: var(--muted); }
+  tbody tr.approx td { color: var(--muted); }
+  tbody tr.exact td { color: var(--ink); }
+  td .ph { color: var(--muted); opacity: 0.7; }
+
+  /* collapsing animates: the cell's content shrinks to nothing and a dash
+     grows in its place, so the column width follows frame by frame */
+  .cw, .cd {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: middle;
+    max-width: var(--w, none);
+  }
+  .cd { max-width: 0; opacity: 0; color: var(--muted); }
+  /* the music font has no hyphen, so dashes must not inherit it */
+  .cd, td .ph { font-family: "Segoe UI", system-ui, sans-serif; }
+  .measuring .cw, .measuring .cd { transition: none !important; }
+
+  /* hover-to-copy (left side: the values are right-justified) */
+  td.cp { position: relative; padding-left: 32px; }
+  td.cp .copy {
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+  }
+  td.cp:hover .copy, td.cp:focus-within .copy { opacity: 1; pointer-events: auto; }
+  td.cp .copy:hover { color: var(--accent); border-color: var(--accent); }
+  td.cp .copy.done { color: #2f7d4f; border-color: #2f7d4f; opacity: 1; }
+
+  footer {
+    margin-top: 42px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+  footer p { margin: 0 0 6px; }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* one block per collapsible group */
+  #levels.cx-unicode .g-unicode .cw,
+  #levels.cx-ascii .g-ascii .cw,
+  #levels.cx-bravura .g-bravura .cw,
+  #levels.cx-fifths .g-fifths .cw,
+  #levels.cx-representing .g-representing .cw,
+  #levels.cx-error .g-error .cw { max-width: 0; opacity: 0; }
+  #levels.cx-unicode .g-unicode .cd,
+  #levels.cx-ascii .g-ascii .cd,
+  #levels.cx-bravura .g-bravura .cd,
+  #levels.cx-fifths .g-fifths .cd,
+  #levels.cx-representing .g-representing .cd,
+  #levels.cx-error .g-error .cd { max-width: var(--w, 1em); opacity: 1; }
+  #levels.cx-unicode td.g-unicode,
+  #levels.cx-ascii td.g-ascii,
+  #levels.cx-bravura td.g-bravura,
+  #levels.cx-fifths td.g-fifths,
+  #levels.cx-representing td.g-representing,
+  #levels.cx-error td.g-error { padding-left: 10px; padding-right: 10px; }
+  #levels.cx-unicode .g-unicode .copy,
+  #levels.cx-ascii .g-ascii .copy,
+  #levels.cx-bravura .g-bravura .copy,
+  #levels.cx-fifths .g-fifths .copy,
+  #levels.cx-representing .g-representing .copy,
+  #levels.cx-error .g-error .copy { display: none; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    button, input, .chev, .tog, .tip::after { transition: transform 150ms, opacity 130ms, background 120ms, border-color 120ms, color 120ms; }
+    .cw, .cd { transition: max-width 300ms cubic-bezier(.4, 0, .2, 1), opacity 220ms; }
+    td { transition: padding 300ms cubic-bezier(.4, 0, .2, 1); }
+  }
+  @media (max-width: 680px) {
+    .wrap { padding: 26px 14px 44px; }
+    .panel { padding: 18px 15px 20px; }
+    .reset-wrap { margin-left: 0; }
+    .ratio-block, .vec-wrap { padding-bottom: 0; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Sagittal Standard Just Intonation Notation Calculator</h1>
+    <p class="sub">Enter a pitch as a ratio or as its prime exponents, choose the
+      Pythagorean nominal that is your 1/1, choose your preferred Sagittal flavor and
+      precision level.</p>
+  </header>
+
+  <div class="panel">
+    <div class="row row-top">
+      <div class="ratio-block">
+        <p class="field-label">Ratio</p>
+        <div class="ratio">
+          <div class="frac">
+            <input id="num" inputmode="numeric" value="1" aria-label="Numerator">
+            <span class="vinculum" aria-hidden="true"></span>
+            <input id="den" inputmode="numeric" value="1" aria-label="Denominator">
+          </div>
+        </div>
+      </div>
+      <div class="vec-block">
+        <p class="cents"><span id="cents11">0.000</span>&cent;</p>
+        <div class="vec-wrap">
+          <div class="vec" id="vec"></div>
+          <button class="add-prime" id="add-prime" type="button"
+                  aria-label="Add the next prime">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="row row-bottom">
+      <div>
+        <p class="field-label">Tonic (1/1)</p>
+        <div class="combo" id="nominal-combo">
+          <button type="button" class="combo-btn" id="nominal-btn" aria-haspopup="listbox"
+                  aria-expanded="false" aria-label="Pythagorean nominal for your tonic">
+            <span class="combo-val"></span><span class="combo-caret" aria-hidden="true">&#9662;</span>
+          </button>
+          <ul class="combo-list" id="nominal-list" role="listbox" hidden></ul>
+        </div>
+        <p class="hint">The Pythagorean nominal for your tonic<br>(from
+          <span class="acc">&#xE264;</span>F to <span class="acc">&#xE263;</span>B).</p>
+      </div>
+      <div>
+        <p class="field-label">Flavor</p>
+        <div class="checks">
+          <label><input type="checkbox" id="show-evo" checked><span>Evo</span></label>
+          <label><input type="checkbox" id="show-revo" checked><span>Revo</span></label>
+        </div>
+      </div>
+      <div class="reset-wrap">
+        <button class="reset" id="reset" type="button">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <p id="error-msg" hidden></p>
+  <div id="levels"></div>
+
+  <details class="level" id="diagram-card">
+    <summary>
+      <span class="chev"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="lv-head"><span class="lv-title">
+        <span class="lv-name">Precision Levels</span>
+        <span class="lv-kind">Diagram</span></span>
+        <span class="lv-meta">every symbol each level offers, laid out by the size of
+          the alteration it stands for &mdash; your pitch marked on it</span></span>
+    </summary>
+    <div class="diagram-body">
+      <div class="diagram-controls">
+        <label for="dg-zoom">Zoom</label>
+        <input type="range" id="dg-zoom" min="14" max="220" value="30" step="1"
+               aria-label="Diagram zoom, pixels per cent">
+        <span id="dg-zoom-val">30 px/&cent;</span>
+      </div>
+      <div class="diagram-scroll" id="dg-scroll"></div>
+      <p class="dg-readout" id="dg-readout"></p>
+    </div>
+  </details>
+
+  <footer>
+    <p>Port of the <em>Sagittal Standard JI Notation Calculator</em> spreadsheet
+      by George Secor and Dave Keenan &mdash;
+      <a href="http://forum.sagittal.org/viewtopic.php?t=86">forum.sagittal.org</a>.
+      The precision levels are visualized
+      <a href="http://sagittal.org/SagittalJI.gif">here</a>.</p>
+    <p>Sagittal and notehead glyphs are a subset of
+      <a href="https://github.com/steinbergmedia/bravura">Bravura</a>
+      &copy; Steinberg Media Technologies GmbH, SIL Open Font License 1.1, embedded in this page.</p>
+  </footer>
+</div>
+
+<script>const SAG_DATA = {"fifthsString": "bbFbbCbbGbbDbbAbbEbbBbF bC bG bD bA bE bB F  C  G  D  A  E  B  #F #C #G #D #A #E #B xF xC xG xD xA xE xB ", "noteheads": {"C": " ", "D": " ", "E": " ", "F": " ", "G": " ", "A": " ", "B": " "}, "bounds": {"medium": [[-0.21078802112060538, 0], [2.74024427456784, 12], [8.08020747628978, 20], [13.4201706780117, 30], [18.7601338797337, 44], [24.6621984711106, 58], [30.0021616728325, 70], [35.1180914643665, 84], [40.2605120340352, 92], [45.1124978365313, 104], [51.21954024885571, 114], [56.842503028856, 131], [62.465465808856194, 141], [68.5725082211804, 0]], "high": [[-0.21078802112060538, 0], [1.19446545301675, 7], [4.5670737909464, 12], [6.53442865473869, 18], [9.06388490818593, 20], [11.0312397719782, 25], [13.4201706780117, 30], [15.387525541804, 34], [17.3548804055963, 36], [18.7601338797337, 41], [20.3059127012848, 44], [22.6948436073183, 52], [26.0674519452479, 58], [28.5969081986951, 65], [30.9858391047286, 67], [32.391092578866, 70], [34.3584474426583, 76], [37.3094797383467, 81], [38.0619403497785, 84], [39.6984106443802, 86], [41.6657655081725, 92], [45.1124978365313, 99], [47.5678300995494, 104], [49.5351849633417, 106], [51.9241158693752, 114], [53.8914707331675, 117], [55.8588255969598, 122], [57.8261804607521, 128], [59.7935353245444, 131], [61.7608901883367, 139], [64.1498210943702, 141], [66.1171759581626, 146], [68.5725082211804, 0]], "ultra": [[-0.21078802112060538, 0], [1.19446545301675, 3], [1.75656684267169, 4], [2.74024427456784, 7], [4.5670737909464, 12], [6.53442865473869, 14], [7.09653004439364, 16], [8.08020747628978, 18], [9.06388490818593, 20], [11.0312397719782, 24], [12.0149172038744, 25], [12.4364932461156, 26], [13.4201706780117, 30], [15.387525541804, 34], [17.3548804055963, 36], [18.7601338797337, 40], [19.7438113116298, 41], [20.3059127012848, 44], [22.6948436073183, 47], [23.1164196495595, 48], [23.955448448755476, 52], [24.88598158569552, 54], [26.0674519452479, 58], [28.5969081986951, 62], [30.0021616728325, 65], [30.9858391047286, 66], [31.4074151469699, 67], [32.391092578866, 70], [34.3584474426583, 74], [35.1180914643665, 76], [36.325802306451, 79], [37.3094797383467, 80], [37.8715811280017, 81], [38.0619403497785, 84], [39.6984106443802, 86], [40.2605120340352, 88], [41.6657655081725, 92], [44.1952217616198, 96], [45.1124978365313, 99], [47.5678300995494, 104], [49.5351849633417, 106], [49.9567610055829, 108], [51.21954024885571, 110], [51.9241158693752, 114], [53.8914707331675, 117], [55.095545776913994, 119], [55.8588255969598, 122], [57.8261804607521, 126], [58.58946028079791, 128], [59.7935353245444, 131], [61.7608901883367, 135], [62.465465808856194, 137], [63.728245052129, 139], [64.1498210943702, 141], [66.1171759581626, 146], [68.5725082211804, 0]], "extreme": [[-0.2107880211, 0], [0.2107880211, 1], [0.7728894108, 2], [1.194465453, 3], [1.756566843, 4], [2.178142885, 5], [2.740244275, 6], [3.161820317, 7], [3.723921706, 8], [4.145497749, 9], [4.567073791, 10], [5.129175181, 11], [5.550751223, 12], [6.112852612, 13], [6.534428655, 14], [7.096530044, 15], [7.518106087, 16], [8.080207476, 17], [8.501783519, 18], [9.063884908, 19], [9.48546095, 20], [10.04756234, 21], [10.46913838, 22], [11.03123977, 23], [11.45281581, 24], [12.0149172, 25], [12.43649325, 26], [12.99859464, 27], [13.42017068, 28], [13.84174672, 29], [14.40384811, 30], [14.82542415, 31], [15.38752554, 32], [15.80910158, 33], [16.37120297, 34], [16.79277902, 35], [17.35488041, 36], [17.77645645, 37], [18.33855784, 38], [18.76013388, 39], [19.32223527, 40], [19.74381131, 41], [20.3059127, 42], [20.72748874, 43], [21.28959013, 44], [21.71116618, 45], [22.13274222, 46], [22.69484361, 47], [23.11641965, 48], [23.67852104, 49], [23.95544845, 50], [24.10009708, 51], [24.66219847, 52], [24.88598159, 53], [25.08377451, 54], [25.6458759, 55], [26.06745195, 56], [26.62955333, 57], [27.05112938, 58], [27.61323077, 59], [28.03480681, 60], [28.5969082, 61], [29.01848424, 62], [29.58058563, 63], [30.00216167, 64], [30.56426306, 65], [30.9858391, 66], [31.40741515, 67], [31.96951654, 68], [32.39109258, 69], [32.95319397, 70], [33.37477001, 71], [33.9368714, 72], [34.35844744, 73], [34.92054883, 74], [35.11809146, 75], [35.34212487, 76], [35.90422626, 77], [36.32580231, 78], [36.8879037, 79], [37.30947974, 80], [37.87158113, 81], [38.06194035, 82], [38.29315717, 83], [38.85525856, 84], [39.2768346, 85], [39.69841064, 86], [40.26051203, 87], [40.68208808, 88], [41.24418947, 89], [41.66576551, 90], [42.2278669, 91], [42.64944294, 92], [43.21154433, 93], [43.63312037, 94], [44.19522176, 95], [44.6167978, 96], [45.1124978365313, 97], [45.60047524, 98], [46.16257663, 99], [46.58415267, 100], [47.14625406, 101], [47.5678301, 102], [48.12993149, 103], [48.55150753, 104], [48.97308357, 105], [49.53518496, 106], [49.95676101, 107], [50.5188624, 108], [50.94043844, 109], [51.21954025, 110], [51.50253983, 111], [51.92411587, 112], [52.48621726, 113], [52.9077933, 114], [53.46989469, 115], [53.89147073, 116], [54.45357212, 117], [54.87514817, 118], [55.09554578, 119], [55.43724955, 120], [55.8588256, 121], [56.42092699, 122], [56.84250303, 123], [57.26407907, 124], [57.82618046, 125], [58.2477565, 126], [58.58946028, 127], [58.80985789, 128], [59.23143393, 129], [59.79353532, 130], [60.21511137, 131], [60.77721276, 132], [61.1987888, 133], [61.76089019, 134], [62.18246623, 135], [62.46546581, 136], [62.74456762, 137], [63.16614366, 138], [63.72824505, 139], [64.14982109, 140], [64.71192248, 141], [65.13349853, 142], [65.55507457, 143], [66.11717596, 144], [66.538752, 145], [67.10085339, 146], [67.52242943, 147], [68.08453082, 148], [68.5725082211804, 0]]}, "commas": {"0": {"name": "1u", "den": 1.0, "num": 1.0, "cents": 0.0}, "1": {"name": "1/455n", "den": 4095.0, "num": 4096.0, "cents": 0.422716166}, "2": {"name": "65/77n", "den": 2079.0, "num": 2080.0, "cents": 0.8325242041}, "3": {"name": "19/5n", "den": 1215.0, "num": 1216.0, "cents": 1.424297941}, "4": {"name": "5s", "den": 32768.0, "num": 32805.0, "cents": 1.953720788}, "5": {"name": "1/91s", "den": 728.0, "num": 729.0, "cents": 2.376436954}, "6": {"name": "19/4375s", "den": 1120000.0, "num": 1121931.0, "cents": 2.982262858}, "7": {"name": "19s", "den": 512.0, "num": 513.0, "cents": 3.378018728}, "8": {"name": "49/55s", "den": 440.0, "num": 441.0, "cents": 3.930158439}, "9": {"name": "385k", "den": 384.0, "num": 385.0, "cents": 4.502561833}, "10": {"name": "11/13k", "den": 351.0, "num": 352.0, "cents": 4.925277999}, "11": {"name": "31/11k", "den": 22528.0, "num": 22599.0, "cents": 5.447635292}, "12": {"name": "5/7k", "den": 5103.0, "num": 5120.0, "cents": 5.757802203}, "13": {"name": "343/5k", "den": 10935.0, "num": 10976.0, "cents": 6.478999485}, "14": {"name": "1/85k", "den": 255.0, "num": 256.0, "cents": 6.775875769}, "15": {"name": "1/1225k", "den": 19600.0, "num": 19683.0, "cents": 7.315767121}, "16": {"name": "25/7k", "den": 224.0, "num": 225.0, "cents": 7.711522991}, "17": {"name": "343k", "den": 1024.0, "num": 1029.0, "cents": 8.432720273}, "18": {"name": "1/17k", "den": 2176.0, "num": 2187.0, "cents": 8.729596557}, "19": {"name": "14641k", "den": 131072.0, "num": 131769.0, "cents": 9.18177119}, "20": {"name": "7/11k", "den": 891.0, "num": 896.0, "cents": 9.687960643}, "21": {"name": "275k", "den": 2187.0, "num": 2200.0, "cents": 10.26036404}, "22": {"name": "49/13k", "den": 106496.0, "num": 107163.0, "cents": 10.80915723}, "23": {"name": "1/8575k", "den": 2083725.0, "num": 2097152.0, "cents": 11.11984854}, "24": {"name": "35/11k", "den": 2816.0, "num": 2835.0, "cents": 11.64168143}, "25": {"name": "1/143C", "den": 143.0, "num": 144.0, "cents": 12.0643976}, "26": {"name": "17/5C", "den": 135.0, "num": 136.0, "cents": 12.77669304}, "27": {"name": "11/23C", "den": 5589.0, "num": 5632.0, "cents": 13.26859077}, "28": {"name": "7/125C", "den": 125.0, "num": 126.0, "cents": 13.79476661}, "29": {"name": "245C", "den": 243.0, "num": 245.0, "cents": 14.19052248}, "30": {"name": "17C", "den": 4096.0, "num": 4131.0, "cents": 14.73041383}, "31": {"name": "143/7C", "den": 567.0, "num": 572.0, "cents": 15.1996942}, "32": {"name": "7/25C", "den": 409600.0, "num": 413343.0, "cents": 15.74848739}, "33": {"name": "1225C", "den": 32768.0, "num": 33075.0, "cents": 16.14424326}, "34": {"name": "23C", "den": 729.0, "num": 736.0, "cents": 16.54434208}, "35": {"name": "1/169C", "den": 507.0, "num": 512.0, "cents": 16.9896756}, "36": {"name": "11/49C", "den": 98.0, "num": 99.0, "cents": 17.57613116}, "37": {"name": "11/31C", "den": 7936.0, "num": 8019.0, "cents": 18.01237509}, "38": {"name": "17/7C", "den": 137781.0, "num": 139264.0, "cents": 18.53449524}, "39": {"name": "91/5C", "den": 90.0, "num": 91.0, "cents": 19.12985264}, "40": {"name": "1/25C", "den": 2025.0, "num": 2048.0, "cents": 19.55256881}, "41": {"name": "1/19C", "den": 19456.0, "num": 19683.0, "cents": 20.08199166}, "42": {"name": "1/253C", "den": 253.0, "num": 256.0, "cents": 20.40771037}, "43": {"name": "91C", "den": 65536.0, "num": 66339.0, "cents": 21.08357343}, "44": {"name": "1/5C", "den": 80.0, "num": 81.0, "cents": 21.5062896}, "45": {"name": "875C", "den": 864.0, "num": 875.0, "cents": 21.90204547}, "46": {"name": "25/13C", "den": 3159.0, "num": 3200.0, "cents": 22.32476163}, "47": {"name": "19/25C", "den": 75.0, "num": 76.0, "cents": 22.93058754}, "48": {"name": "1C", "den": 524288.0, "num": 531441.0, "cents": 23.46001038}, "49": {"name": "4375C", "den": 1048576.0, "num": 1063125.0, "cents": 23.85576626}, "50": {"name": "77/5C", "den": 1215.0, "num": 1232.0, "cents": 24.05513064}, "51": {"name": "125/13C", "den": 3328.0, "num": 3375.0, "cents": 24.27848242}, "52": {"name": "19/5C", "den": 40960.0, "num": 41553.0, "cents": 24.88430833}, "53": {"name": "13C", "den": 6561.0, "num": 6656.0, "cents": 24.88765485}, "54": {"name": "1/35C", "den": 2066715.0, "num": 2097152.0, "cents": 25.31037101}, "55": {"name": "77C", "den": 2048.0, "num": 2079.0, "cents": 26.00885143}, "56": {"name": "11/65C", "den": 65.0, "num": 66.0, "cents": 26.4315676}, "57": {"name": "65C", "den": 64.0, "num": 65.0, "cents": 26.84137563}, "58": {"name": "1/7C", "den": 63.0, "num": 64.0, "cents": 27.2640918}, "59": {"name": "625C", "den": 19683.0, "num": 20000.0, "cents": 27.65984767}, "60": {"name": "11/13C", "den": 212992.0, "num": 216513.0, "cents": 28.38528838}, "61": {"name": "325C", "den": 2097152.0, "num": 2132325.0, "cents": 28.79509642}, "62": {"name": "5/7C", "den": 3584.0, "num": 3645.0, "cents": 29.21781259}, "63": {"name": "3125C", "den": 3072.0, "num": 3125.0, "cents": 29.61356846}, "64": {"name": "85/11C", "den": 2673.0, "num": 2720.0, "cents": 30.17617667}, "65": {"name": "19/7C", "den": 56.0, "num": 57.0, "cents": 30.64211053}, "66": {"name": "55/7C", "den": 55.0, "num": 56.0, "cents": 31.19425024}, "67": {"name": "55C", "den": 54.0, "num": 55.0, "cents": 31.76665363}, "68": {"name": "11/91C", "den": 22113.0, "num": 22528.0, "cents": 32.1893698}, "69": {"name": "125/23C", "den": 368.0, "num": 375.0, "cents": 32.62179519}, "70": {"name": "7/11C", "den": 45056.0, "num": 45927.0, "cents": 33.14797103}, "71": {"name": "13/17S", "den": 51.0, "num": 52.0, "cents": 33.6172514}, "72": {"name": "17/25C", "den": 50.0, "num": 51.0, "cents": 34.28298264}, "73": {"name": "7/247S", "den": 247.0, "num": 252.0, "cents": 34.6952303}, "74": {"name": "25/49C", "den": 49.0, "num": 50.0, "cents": 34.97561479}, "75": {"name": "31S", "den": 243.0, "num": 248.0, "cents": 35.26056814}, "76": {"name": "49S", "den": 48.0, "num": 49.0, "cents": 35.69681207}, "77": {"name": "17/5S", "den": 327680.0, "num": 334611.0, "cents": 36.23670342}, "78": {"name": "11/23S", "den": 23552.0, "num": 24057.0, "cents": 36.72860115}, "79": {"name": "1/11S", "den": 8019.0, "num": 8192.0, "cents": 36.95205244}, "80": {"name": "245S", "den": 524288.0, "num": 535815.0, "cents": 37.65053286}, "81": {"name": "23/5S", "den": 45.0, "num": 46.0, "cents": 38.05063167}, "82": {"name": "7/13S", "den": 1664.0, "num": 1701.0, "cents": 38.07324903}, "83": {"name": "11/17S", "den": 1377.0, "num": 1408.0, "cents": 38.5425294}, "84": {"name": "5/11S", "den": 44.0, "num": 45.0, "cents": 38.90577323}, "85": {"name": "1/1001S", "den": 1001.0, "num": 1024.0, "cents": 39.3284894}, "86": {"name": "23S", "den": 16384.0, "num": 16767.0, "cents": 40.00435246}, "87": {"name": "91/25S", "den": 800.0, "num": 819.0, "cents": 40.63614224}, "88": {"name": "1/125S", "den": 125.0, "num": 128.0, "cents": 41.05885841}, "89": {"name": "35S", "den": 2187.0, "num": 2240.0, "cents": 41.45461428}, "90": {"name": "17/7S", "den": 448.0, "num": 459.0, "cents": 41.99450563}, "91": {"name": "91/5S", "den": 5242880.0, "num": 5373459.0, "cents": 42.58986303}, "92": {"name": "1/25S", "den": 6400.0, "num": 6561.0, "cents": 43.01257919}, "93": {"name": "175S", "den": 512.0, "num": 525.0, "cents": 43.40833506}, "94": {"name": "5/13S", "den": 39.0, "num": 40.0, "cents": 43.83105123}, "95": {"name": "49/17S", "den": 34816.0, "num": 35721.0, "cents": 44.42640863}, "96": {"name": "13/19S", "den": 38.0, "num": 39.0, "cents": 44.9696465}, "97": {"name": "77/25M", "den": 75.0, "num": 77.0, "cents": 45.56142024}, "98": {"name": "25/13M", "den": 53248.0, "num": 54675.0, "cents": 45.78477202}, "99": {"name": "13/5M", "den": 405.0, "num": 416.0, "cents": 46.39394444}, "100": {"name": "1/175M", "den": 127575.0, "num": 131072.0, "cents": 46.81666061}, "101": {"name": "37M", "den": 36.0, "num": 37.0, "cents": 47.43403702}, "102": {"name": "11/325M", "den": 18200.0, "num": 18711.0, "cents": 47.93785719}, "103": {"name": "13M", "den": 1024.0, "num": 1053.0, "cents": 48.34766523}, "104": {"name": "1/35M", "den": 35.0, "num": 36.0, "cents": 48.7703814}, "105": {"name": "125M", "den": 243.0, "num": 250.0, "cents": 49.16613727}, "106": {"name": "11/19M", "den": 171.0, "num": 176.0, "cents": 49.8949245}, "107": {"name": "65M", "den": 33554432.0, "num": 34543665.0, "cents": 50.30138602}, "108": {"name": "1/7M", "den": 57344.0, "num": 59049.0, "cents": 50.72410218}, "109": {"name": "625M", "den": 16384.0, "num": 16875.0, "cents": 51.11985806}, "110": {"name": "11/5M", "den": 10935.0, "num": 11264.0, "cents": 51.31922244}, "111": {"name": "17/11M", "den": 33.0, "num": 34.0, "cents": 51.68246627}, "112": {"name": "5/23M", "den": 621.0, "num": 640.0, "cents": 52.174364}, "113": {"name": "7/275M", "den": 550.0, "num": 567.0, "cents": 52.70053984}, "114": {"name": "11M", "den": 32.0, "num": 33.0, "cents": 53.27294323}, "115": {"name": "85/11M", "den": 180224.0, "num": 185895.0, "cents": 53.63618706}, "116": {"name": "65/7M", "den": 63.0, "num": 65.0, "cents": 54.10546743}, "117": {"name": "1/49M", "den": 3969.0, "num": 4096.0, "cents": 54.5281836}, "118": {"name": "1/31M", "den": 31.0, "num": 32.0, "cents": 54.96442754}, "119": {"name": "55M", "den": 1048576.0, "num": 1082565.0, "cents": 55.22666402}, "120": {"name": "11/91M", "den": 23296.0, "num": 24057.0, "cents": 55.64938018}, "121": {"name": "595M", "den": 576.0, "num": 595.0, "cents": 56.1850281}, "122": {"name": "5/49M", "den": 392.0, "num": 405.0, "cents": 56.48190439}, "123": {"name": "49/5L", "den": 1280.0, "num": 1323.0, "cents": 57.20310167}, "124": {"name": "1/595L", "den": 19040.0, "num": 19683.0, "cents": 57.49997795}, "125": {"name": "91/11L", "den": 88.0, "num": 91.0, "cents": 58.03562587}, "126": {"name": "1/55L", "den": 495.0, "num": 512.0, "cents": 58.45834204}, "127": {"name": "31L", "den": 65536.0, "num": 67797.0, "cents": 58.72057852}, "128": {"name": "49L", "den": 8388608.0, "num": 8680203.0, "cents": 59.15682246}, "129": {"name": "7/65L", "den": 133120.0, "num": 137781.0, "cents": 59.57953862}, "130": {"name": "11/85L", "den": 85.0, "num": 88.0, "cents": 60.048819}, "131": {"name": "1/11L", "den": 704.0, "num": 729.0, "cents": 60.41206283}, "132": {"name": "275/7L", "den": 7168.0, "num": 7425.0, "cents": 60.98446622}, "133": {"name": "23/5L", "den": 1310720.0, "num": 1358127.0, "cents": 61.51064206}, "134": {"name": "11/17L", "den": 69632.0, "num": 72171.0, "cents": 62.00253979}, "135": {"name": "5/11L", "den": 23068672.0, "num": 23914845.0, "cents": 62.36578362}, "136": {"name": "1/625L", "den": 625.0, "num": 648.0, "cents": 62.565148}, "137": {"name": "7L", "den": 27.0, "num": 28.0, "cents": 62.96090387}, "138": {"name": "1/65L", "den": 15795.0, "num": 16384.0, "cents": 63.38362004}, "139": {"name": "19/11L", "den": 360448.0, "num": 373977.0, "cents": 63.79008156}, "140": {"name": "1/125L", "den": 512000.0, "num": 531441.0, "cents": 64.51886879}, "141": {"name": "35L", "den": 8192.0, "num": 8505.0, "cents": 64.91462466}, "142": {"name": "1/13L", "den": 26.0, "num": 27.0, "cents": 65.33734083}, "143": {"name": "325/11L", "den": 2816.0, "num": 2925.0, "cents": 65.74714886}, "144": {"name": "1/37L", "den": 18944.0, "num": 19683.0, "cents": 66.25096903}, "145": {"name": "175L", "den": 268435456.0, "num": 279006525.0, "cents": 66.86834545}, "146": {"name": "5/13L", "den": 851968.0, "num": 885735.0, "cents": 67.29106161}, "147": {"name": "13/25L", "den": 25.0, "num": 26.0, "cents": 67.90023404}, "148": {"name": "25/77L", "den": 164025.0, "num": 157696.0, "cents": 68.1235858188874}}, "key": {"0": [" ", " ", "", ""], "1": ["`|", "`|", " ", " "], "2": ["``|", "``|", " ", " "], "3": [".)|", ".)|", " ", " "], "4": ["'|", "'|", " ", " "], "5": ["`'|", "`'|", "  ", "  "], "6": [",)|", ",)|", " ", " "], "7": [")|", ")|", "", ""], "8": ["`)|", "`)|", " ", " "], "9": ["``)|", "``)|", " ", " "], "10": [",,|(", ",,|(", " ", " "], "11": [",|(", ",|(", " ", " "], "12": ["|(", "|(", "", ""], "13": ["`|(", "`|(", " ", " "], "14": [".~|", ".~|", " ", " "], "15": [",'|(", ",'|(", "  ", "  "], "16": ["'|(", "'|(", " ", " "], "17": [",~|", ",~|", " ", " "], "18": ["~|", "~|", "", ""], "19": [",)|(", ",)|(", " ", " "], "20": [")|(", ")|(", "", ""], "21": ["`)|(", "`)|(", " ", " "], "22": ["``)|(", "``)|(", " ", " "], "23": [",')|(", ",')|(", "  ", "  "], "24": ["')|(", "')|(", " ", " "], "25": [")~|", ")~|", "", ""], "26": [".~|(", ".~|(", " ", " "], "27": ["`.~|(", "`.~|(", "  ", "  "], "28": [",,~|(", ",,~|(", " ", " "], "29": [",~|(", ",~|(", " ", " "], "30": ["~|(", "~|(", "", ""], "31": ["`~|(", "`~|(", " ", " "], "32": [",,|~", ",,|~", " ", " "], "33": [",|~", ",|~", " ", " "], "34": ["|~", "|~", "", ""], "35": ["`|~", "`|~", " ", " "], "36": ["~~|", "~~|", "", ""], "37": ["`~~|", "`~~|", " ", " "], "38": ["``~~|", "``~~|", " ", " "], "39": [",./|", ",./|", "  ", "  "], "40": ["./|", "./|", " ", " "], "41": [")|~", ")|~", "", ""], "42": [",,/|", ",,/|", " ", " "], "43": [",/|", ",/|", " ", " "], "44": ["/|", "/|", "", ""], "45": ["`/|", "`/|", " ", " "], "46": ["``/|", "``/|", " ", " "], "47": [".)/|", ".)/|", " ", " "], "48": ["'/|", "'/|", " ", " "], "49": ["`'/|", "`'/|", "  ", "  "], "50": [",,)/|", ",,)/|", " ", " "], "51": [",)/|", ",)/|", " ", " "], "52": [")/|", ")/|", "", ""], "53": [",.|)", ",.|)", "  ", "  "], "54": [".|)", ".|)", " ", " "], "55": ["`.|)", "`.|)", "  ", "  "], "56": [",,|)", ",,|)", " ", " "], "57": [",|)", ",|)", " ", " "], "58": ["|)", "|)", "", ""], "59": ["`|)", "`|)", " ", " "], "60": ["``|)", "``|)", " ", " "], "61": [",'|)", ",'|)", "  ", "  "], "62": ["'|)", "'|)", " ", " "], "63": ["`'|)", "`'|)", "  ", "  "], "64": [",)|)", ",)|)", " ", " "], "65": [")|)", ")|)", "", ""], "66": [".(|", ".(|", " ", " "], "67": ["|\\", "|\\", "", ""], "68": ["`|\\", "`|\\", " ", " "], "69": [",(|", ",(|", " ", " "], "70": ["(|", "(|", "", ""], "71": ["`(|", "`(|", " ", " "], "72": ["``(|", "``(|", " ", " "], "73": [",'(|", ",'(|", "  ", "  "], "74": ["'(|", "'(|", " ", " "], "75": [",~|)", ",~|)", " ", " "], "76": ["~|)", "~|)", "", ""], "77": ["`~|)", "`~|)", " ", " "], "78": [",.(|(", ",.(|(", "  ", "  "], "79": [".(|(", ".(|(", " ", " "], "80": ["'~|)", "'~|)", " ", " "], "81": ["/|~", "/|~", "", ""], "82": [",,(|(", ",,(|(", " ", " "], "83": [",(|(", ",(|(", " ", " "], "84": ["(|(", "(|(", "", ""], "85": ["`(|(", "`(|(", " ", " "], "86": ["~|\\", "~|\\", "", ""], "87": [",.//|", ",.//|", "  ", "  "], "88": [".//|", ".//|", " ", " "], "89": ["`.//|", "`.//|", "  ", "  "], "90": [",,//|", ",,//|", " ", " "], "91": [",//|", ",//|", " ", " "], "92": ["//|", "//|", "", ""], "93": ["`//|", "`//|", " ", " "], "94": ["``//|", "``//|", " ", " "], "95": [",'//|", ",'//|", "  ", "  "], "96": ["'//|", "'//|", " ", " "], "97": [",,)//|", ",,)//|", " ", " "], "98": [",)//|", ",)//|", " ", " "], "99": [")//|", ")//|", "", ""], "100": ["`)//|", "`)//|", " ", " "], "101": ["``)//|", "``)//|", " ", " "], "102": [",,/|)", ",,/|)", " ", " "], "103": [",/|)", ",/|)", " ", " "], "104": ["/|)", "/|)", "", ""], "105": ["`/|)", "`/|)", " ", " "], "106": ["(|~", "(|~", "", ""], "107": [",'/|)", ",'/|)", "  ", "  "], "108": ["'/|)", "'/|)", " ", " "], "109": ["`'/|)", "`'/|)", "  ", "  "], "110": ["./|\\", "./|\\", " ", " "], "111": ["`./|\\", "`./|\\", "  ", "  "], "112": [",,/|\\", ",,/|\\", " ", " "], "113": [",/|\\", ",/|\\", " ", " "], "114": ["/|\\", "/|\\", "", ""], "115": ["`/|\\", "`/|\\", " ", " "], "116": [",(/|", ",(/|", " ", " "], "117": ["(/|", "(/|", "", ""], "118": ["`(/|", "`(/|", " ", " "], "119": ["'/|\\", "'/|\\", " ", " "], "120": ["`'/|\\", "`'/|\\", "  ", "  "], "121": [",)/|\\", ",)/|\\", " ", " "], "122": [")/|\\", ")/|\\", "", ""], "123": ["`)/|\\", "`)/|\\", " ", " "], "124": ["``)/|\\", "``)/|\\", " ", " "], "125": [",.(|)", ",.(|)", "  ", "  "], "126": [".(|)", ".(|)", " ", " "], "127": [",|\\)", ",|\\)", " ", " "], "128": ["|\\)", "|\\)", "", ""], "129": ["`|\\)", "`|\\)", " ", " "], "130": [",(|)", ",(|)", " ", " "], "131": ["(|)", "(|)", "", ""], "132": ["`(|)", "`(|)", " ", " "], "133": ["``(|)", "``(|)", " ", " "], "134": [",'(|)", ",'(|)", "  ", "  "], "135": ["'(|)", "'(|)", " ", " "], "136": [",.(|\\", ",.(|\\", "  ", "  "], "137": [".(|\\", ".(|\\", " ", " "], "138": ["`.(|\\", "`.(|\\", "  ", "  "], "139": ["|\\\\", "|\\\\", "", ""], "140": [",(|\\", ",(|\\", " ", " "], "141": ["(|\\", "(|\\", "", ""], "142": ["`(|\\", "`(|\\", " ", " "], "143": ["``(|\\", "``(|\\", " ", " "], "144": [",,)|\\\\", ",,)|\\\\", " ", " "], "145": [",)|\\\\", ",)|\\\\", " ", " "], "146": [")|\\\\", ")|\\\\", "", ""], "147": ["`)|\\\\", "`)|\\\\", " ", " "], "148": ["``)|\\\\", "``)|\\\\", " ", " "], "-1": [",!", ",!", " ", " "], "-2": [",,!", ",,!", " ", " "], "-3": ["')!", "')!", " ", " "], "-4": [".!", ".!", " ", " "], "-5": [",.!", ",.!", "  ", "  "], "-6": ["`)!", "`)!", " ", " "], "-7": [")!", ")!", "", ""], "-8": [",)!", ",)!", " ", " "], "-9": [",,)!", ",,)!", " ", " "], "-10": ["``!(", "``!(", " ", " "], "-11": ["`!(", "`!(", " ", " "], "-12": ["!(", "!(", "", ""], "-13": [",!(", ",!(", " ", " "], "-14": ["'~!", "'~!", " ", " "], "-15": ["`.!(", "`.!(", "  ", "  "], "-16": [".!(", ".!(", " ", " "], "-17": ["`~!", "`~!", " ", " "], "-18": ["~!", "~!", "", ""], "-19": ["`)!(", "`)!(", " ", " "], "-20": [")!(", ")!(", "", ""], "-21": [",)!(", ",)!(", " ", " "], "-22": [",,)!(", ",,)!(", " ", " "], "-23": ["`.)!(", "`.)!(", "  ", "  "], "-24": [".)!(", ".)!(", " ", " "], "-25": [")~!", ")~!", "", ""], "-26": ["'~!(", "'~!(", " ", " "], "-27": [",'~!(", ",'~!(", "  ", "  "], "-28": ["``~!(", "``~!(", " ", " "], "-29": ["`~!(", "`~!(", " ", " "], "-30": ["~!(", "~!(", "", ""], "-31": [",~!(", ",~!(", " ", " "], "-32": ["``!~", "``!~", " ", " "], "-33": ["`!~", "`!~", " ", " "], "-34": ["!~", "!~", "", ""], "-35": [",!~", ",!~", " ", " "], "-36": ["~~!", "~~!", "", ""], "-37": [",~~!", ",~~!", " ", " "], "-38": [",,~~!", ",,~~!", " ", " "], "-39": ["`'\\!", "`'\\!", "  ", "  "], "-40": ["'\\!", "'\\!", " ", " "], "-41": [")!~", ")!~", "", ""], "-42": ["``\\!", "``\\!", " ", " "], "-43": ["`\\!", "`\\!", " ", " "], "-44": ["\\!", "\\!", "", ""], "-45": [",\\!", ",\\!", " ", " "], "-46": [",,\\!", ",,\\!", " ", " "], "-47": ["')\\!", "')\\!", " ", " "], "-48": [".\\!", ".\\!", " ", " "], "-49": [",.\\!", ",.\\!", "  ", "  "], "-50": ["``)\\!", "``)\\!", " ", " "], "-51": ["`)\\!", "`)\\!", " ", " "], "-52": [")\\!", ")\\!", "", ""], "-53": ["`'!)", "`'!)", "  ", "  "], "-54": ["'!)", "'!)", " ", " "], "-55": [",'!)", ",'!)", "  ", "  "], "-56": ["``!)", "``!)", " ", " "], "-57": ["`!)", "`!)", " ", " "], "-58": ["!)", "!)", "", ""], "-59": [",!)", ",!)", " ", " "], "-60": [",,!)", ",,!)", " ", " "], "-61": ["`.!)", "`.!)", "  ", "  "], "-62": [".!)", ".!)", " ", " "], "-63": [",.!)", ",.!)", "  ", "  "], "-64": ["`)!)", "`)!)", " ", " "], "-65": [")!)", ")!)", "", ""], "-66": ["'(!", "'(!", " ", " "], "-67": ["!/", "!/", "", ""], "-68": [",!/", ",!/", " ", " "], "-69": ["`(!", "`(!", " ", " "], "-70": ["(!", "(!", "", ""], "-71": [",(!", ",(!", " ", " "], "-72": [",,(!", ",,(!", " ", " "], "-73": ["`.(!", "`.(!", "  ", "  "], "-74": [".(!", ".(!", " ", " "], "-75": ["`~!)", "`~!)", " ", " "], "-76": ["~!)", "~!)", "", ""], "-77": [",~!)", ",~!)", " ", " "], "-78": ["`'(!(", "`'(!(", "  ", "  "], "-79": ["'(!(", "'(!(", " ", " "], "-80": [".~!)", ".~!)", " ", " "], "-81": ["\\!~", "\\!~", "", ""], "-82": ["``(!(", "``(!(", " ", " "], "-83": ["`(!(", "`(!(", " ", " "], "-84": ["(!(", "(!(", "", ""], "-85": [",(!(", ",(!(", " ", " "], "-86": ["~!/", "~!/", "", ""], "-87": ["`'\\\\!", "`'\\\\!", "  ", "  "], "-88": ["'\\\\!", "'\\\\!", " ", " "], "-89": [",'\\\\!", ",'\\\\!", "  ", "  "], "-90": ["``\\\\!", "``\\\\!", " ", " "], "-91": ["`\\\\!", "`\\\\!", " ", " "], "-92": ["\\\\!", "\\\\!", "", ""], "-93": [",\\\\!", ",\\\\!", " ", " "], "-94": [",,\\\\!", ",,\\\\!", " ", " "], "-95": ["`.\\\\!", "`.\\\\!", "  ", "  "], "-96": [".\\\\!", ".\\\\!", " ", " "], "-97": ["``)\\\\!", "``)\\\\!", " ", " "], "-98": ["`)\\\\!", "`)\\\\!", " ", " "], "-99": [")\\\\!", ")\\\\!", "", ""], "-100": [",)\\\\!", ",)\\\\!", " ", " "], "-101": [",,)\\\\!", ",,)\\\\!", " ", " "], "-102": ["``\\!)", "``\\!)", " ", " "], "-103": ["`\\!)", "`\\!)", " ", " "], "-104": ["\\!)", "\\!)", "", ""], "-105": [",\\!)", ",\\!)", " ", " "], "-106": ["(!~", "(!~", "", ""], "-107": ["`.\\!)", "`.\\!)", "  ", "  "], "-108": [".\\!)", ".\\!)", " ", " "], "-109": [",.\\!)", ",.\\!)", "  ", "  "], "-110": ["'\\!/", "'\\!/", " ", " "], "-111": [",'\\!/", ",'\\!/", "  ", "  "], "-112": ["``\\!/", "``\\!/", " ", " "], "-113": ["`\\!/", "`\\!/", " ", " "], "-114": ["\\!/", "\\!/", "", ""], "-115": [",\\!/", ",\\!/", " ", " "], "-116": ["`(\\!", "`(\\!", " ", " "], "-117": ["(\\!", "(\\!", "", ""], "-118": [",(\\!", ",(\\!", " ", " "], "-119": [".\\!/", ".\\!/", " ", " "], "-120": [",.\\!/", ",.\\!/", "  ", "  "], "-121": ["`)\\!/", "`)\\!/", " ", " "], "-122": [")\\!/", ")\\!/", "", ""], "-123": [",)\\!/", ",)\\!/", " ", " "], "-124": [",,)\\!/", ",,)\\!/", " ", " "], "-125": ["`'(!)", "`'(!)", "  ", "  "], "-126": ["'(!)", "'(!)", " ", " "], "-127": ["`!/)", "`!/)", " ", " "], "-128": ["!/)", "!/)", "", ""], "-129": [",!/)", ",!/)", " ", " "], "-130": ["`(!)", "`(!)", " ", " "], "-131": ["(!)", "(!)", "", ""], "-132": [",(!)", ",(!)", " ", " "], "-133": [",,(!)", ",,(!)", " ", " "], "-134": ["`.(!)", "`.(!)", "  ", "  "], "-135": [".(!)", ".(!)", " ", " "], "-136": ["`'(!/", "`'(!/", "  ", "  "], "-137": ["'(!/", "'(!/", " ", " "], "-138": [",'(!/", ",'(!/", "  ", "  "], "-139": ["!//", "!//", "", ""], "-140": ["`(!/", "`(!/", " ", " "], "-141": ["(!/", "(!/", "", ""], "-142": [",(!/", ",(!/", " ", " "], "-143": [",,(!/", ",,(!/", " ", " "], "-144": ["``)!//", "``)!//", " ", " "], "-145": ["`)!//", "`)!//", " ", " "], "-146": [")!//", ")!//", "", ""], "-147": [",)!//", ",)!//", " ", " "], "-148": [",,)!//", ",,)!//", " ", " "], "1000": ["#", "/||\\", "", ""], "1001": ["`|#", "`/||\\", "  ", " "], "1002": ["``|#", "``/||\\", "  ", " "], "1003": [".)|#", ".)|||", "  ", " "], "1004": ["'|#", "'/||\\", "  ", " "], "1005": ["`'|#", "`'/||\\", "   ", "  "], "1006": [",)|#", ",)|||", "  ", " "], "1007": [")|#", ")|||", " ", ""], "1008": ["`)|#", "`)|||", "  ", " "], "1009": ["``)|#", "``)|||", "  ", " "], "1010": [",,|(#", ",,|||(", "  ", " "], "1011": [",|(#", ",|||(", "  ", " "], "1012": ["|(#", "|||(", " ", ""], "1013": ["`|(#", "`|||(", "  ", " "], "1014": [".~|#", ".~|||", "  ", " "], "1015": [",'|(#", ",'|||(", "   ", "  "], "1016": ["'|(#", "'|||(", "  ", " "], "1017": [",~|#", ",~|||", "  ", " "], "1018": ["~|#", "~|||", " ", ""], "1019": [",)|(#", ",)|||(", "  ", " "], "1020": [")|(#", ")|||(", " ", ""], "1021": ["`)|(#", "`)|||(", "  ", " "], "1022": ["``)|(#", "``)|||(", "  ", " "], "1023": [",')|(#", ",')|||(", "   ", "  "], "1024": ["')|(#", "')|||(", "  ", " "], "1025": [")~|#", ")~|||", " ", ""], "1026": [".~|(#", ".~|||(", "  ", " "], "1027": ["`.~|(#", "`.~|||(", "   ", "  "], "1028": [",,~|(#", ",,~|||(", "  ", " "], "1029": [",~|(#", ",~|||(", "  ", " "], "1030": ["~|(#", "~|||(", " ", ""], "1031": ["`~|(#", "`~|||(", "  ", " "], "1032": [",,|~#", ",,|||~", "  ", " "], "1033": [",|~#", ",|||~", "  ", " "], "1034": ["|~#", "|||~", " ", ""], "1035": ["`|~#", "`|||~", "  ", " "], "1036": ["~~|#", "~~|||", " ", ""], "1037": ["`~~|#", "`~~|||", "  ", " "], "1038": ["``~~|#", "``~~|||", "  ", " "], "1039": [",./|#", ",./|||", "   ", "  "], "1040": ["./|#", "./|||", "  ", " "], "1041": [")|~#", ")|||~", " ", ""], "1042": [",,/|#", ",,/|||", "  ", " "], "1043": [",/|#", ",/|||", "  ", " "], "1044": ["/|#", "/|||", " ", ""], "1045": ["`/|#", "`/|||", "  ", " "], "1046": ["``/|#", "``/|||", "  ", " "], "1047": [".)/|#", ".)/|||", "  ", " "], "1048": ["'/|#", "'/|||", "  ", " "], "1049": ["`'/|#", "`'/|||", "   ", "  "], "1050": [",,)/|#", ",,)/|||", "  ", " "], "1051": [",)/|#", ",)/|||", "  ", " "], "1052": [")/|#", ")/|||", " ", ""], "1053": [",.|)#", ",.|||)", "   ", "  "], "1054": [".|)#", ".|||)", "  ", " "], "1055": ["`.|)#", "`.|||)", "   ", "  "], "1056": [",,|)#", ",,|||)", "  ", " "], "1057": [",|)#", ",|||)", "  ", " "], "1058": ["|)#", "|||)", " ", ""], "1059": ["`|)#", "`|||)", "  ", " "], "1060": ["``|)#", "``|||)", "  ", " "], "1061": [",'|)#", ",'|||)", "   ", "  "], "1062": ["'|)#", "'|||)", "  ", " "], "1063": ["`'|)#", "`'|||)", "   ", "  "], "1064": [",)|)#", ",)|||)", "  ", " "], "1065": [")|)#", ")|||)", " ", ""], "1066": [".(|#", ".(|||", "  ", " "], "1067": ["|\\#", "|||\\", " ", ""], "1068": ["`|\\#", "`|||\\", "  ", " "], "1069": [",(|#", ",(|||", "  ", " "], "1070": ["(|#", "(|||", " ", ""], "1071": ["`(|#", "`(|||", "  ", " "], "1072": ["``(|#", "``(|||", "  ", " "], "1073": [",'(|#", ",'(|||", "   ", "  "], "1074": ["'(|#", "'(|||", "  ", " "], "1075": [",~|)#", ",~|||)", "  ", " "], "1076": ["~|)#", "~|||)", " ", ""], "1077": ["`~|)#", "`~|||)", "  ", " "], "1078": [",.(|(#", ",.(|||(", "   ", "  "], "1079": [".(|(#", ".(|||(", "  ", " "], "1080": ["'~|)#", "'~|||)", "  ", " "], "1081": ["/|~#", "/|||~", " ", ""], "1082": [",,(|(#", ",,(|||(", "  ", " "], "1083": [",(|(#", ",(|||(", "  ", " "], "1084": ["(|(#", "(|||(", " ", ""], "1085": ["`(|(#", "`(|||(", "  ", " "], "1086": ["~|\\#", "~|||\\", " ", ""], "1087": [",.//|#", ",.//|||", "   ", "  "], "1088": [".//|#", ".//|||", "  ", " "], "1089": ["`.//|#", "`.//|||", "   ", "  "], "1090": [",,//|#", ",,//|||", "  ", " "], "1091": [",//|#", ",//|||", "  ", " "], "1092": ["//|#", "//|||", " ", ""], "1093": ["`//|#", "`//|||", "  ", " "], "1094": ["``//|#", "``//|||", "  ", " "], "1095": [",'//|#", ",'//|||", "   ", "  "], "1096": ["'//|#", "'//|||", "  ", " "], "1097": [",,)//|#", ",,)//|||", "  ", " "], "1098": [",)//|#", ",)//|||", "  ", " "], "1099": [")//|#", ")//|||", " ", ""], "1100": ["`)//|#", "`)//|||", "  ", " "], "1101": ["``)//|#", "``)//|||", "  ", " "], "1102": [",,/|)#", ",,/|||)", "  ", " "], "1103": [",/|)#", ",/|||)", "  ", " "], "1104": ["/|)#", "/|||)", " ", ""], "1105": ["`/|)#", "`/|||)", "  ", " "], "1106": ["(|~#", "(|||~", " ", ""], "1107": [",'/|)#", ",'/|||)", "   ", "  "], "1108": ["'/|)#", "'/|||)", "  ", " "], "1109": ["`'/|)#", "`'/|||)", "   ", "  "], "1110": ["./|\\#", "./|||\\", "  ", " "], "1111": ["`./|\\#", "`./|||\\", "   ", "  "], "1112": [",,/|\\#", ",,/|||\\", "  ", " "], "1113": [",/|\\#", ",/|||\\", "  ", " "], "1114": ["/|\\#", "/|||\\", " ", ""], "1115": ["`/|\\#", "`/|||\\", "  ", " "], "1116": [",(/|#", ",(/|||", "  ", " "], "1117": ["(/|#", "(/|||", " ", ""], "1118": ["`(/|#", "`(/|||", "  ", " "], "1119": ["'/|\\#", "'/|||\\", "  ", " "], "1120": ["`'/|\\#", "`'/|||\\", "   ", "  "], "1121": [",)/|\\#", ",)/|||\\", "  ", " "], "1122": [")/|\\#", ")/|||\\", " ", ""], "1123": ["`)/|\\#", "`)/|||\\", "  ", " "], "1124": ["``)/|\\#", "``)/|||\\", "  ", " "], "1125": [",.(|)#", ",.(|||)", "   ", "  "], "1126": [".(|)#", ".(|||)", "  ", " "], "1127": [",|\\)#", ",|||\\)", "  ", " "], "1128": ["|\\)#", "|||\\)", " ", ""], "1129": ["`|\\)#", "`|||\\)", "  ", " "], "1130": [",(|)#", ",(|||)", "  ", " "], "1131": ["(|)#", "(|||)", " ", ""], "1132": ["`(|)#", "`(|||)", "  ", " "], "1133": ["``(|)#", "``(|||)", "  ", " "], "1134": [",'(|)#", ",'(|||)", "   ", "  "], "1135": ["'(|)#", "'(|||)", "  ", " "], "1136": [",.(|\\#", ",.(|||\\", "   ", "  "], "1137": [".(|\\#", ".(|||\\", "  ", " "], "1138": ["`.(|\\#", "`.(|||\\", "   ", "  "], "1139": ["|\\\\#", "|||\\\\", " ", ""], "1140": [",(|\\#", ",(|||\\", "  ", " "], "1141": ["(|\\#", "(|||\\", " ", ""], "1142": ["`(|\\#", "`(|||\\", "  ", " "], "1143": ["``(|\\#", "``(|||\\", "  ", " "], "1144": [",,)|\\\\#", ",,)|||\\\\", "  ", " "], "1145": [",)|\\\\#", ",)|||\\\\", "  ", " "], "1146": [")|\\\\#", ")|||\\\\", " ", ""], "1147": ["`)|\\\\#", "`)|||\\\\", "  ", " "], "1148": ["``)|\\\\#", "``)|||\\\\", "  ", " "], "999": [",!#", ",/||\\", "  ", " "], "998": [",,!#", ",,/||\\", "  ", " "], "997": ["')!#", "'(||~", "  ", " "], "996": [".!#", "./||\\", "  ", " "], "995": [",.!#", ",./||\\", "   ", "  "], "994": ["`)!#", "`(||~", "  ", " "], "993": [")!#", "(||~", " ", ""], "992": [",)!#", ",(||~", "  ", " "], "991": [",,)!#", ",,(||~", "  ", " "], "990": ["``!(#", "``/||)", "  ", " "], "989": ["`!(#", "`/||)", "  ", " "], "988": ["!(#", "/||)", " ", ""], "987": [",!(#", ",/||)", "  ", " "], "986": ["'~!#", "')//||", "  ", " "], "985": ["`.!(#", "`./||)", "   ", "  "], "984": [".!(#", "./||)", "  ", " "], "983": ["`~!#", "`)//||", "  ", " "], "982": ["~!#", ")//||", " ", ""], "981": ["`)!(#", "`//||", "  ", " "], "980": [")!(#", "//||", " ", ""], "979": [",)!(#", ",//||", "  ", " "], "978": [",,)!(#", ",,//||", "  ", " "], "977": ["`.)!(#", "`.//||", "   ", "  "], "976": [".)!(#", ".//||", "  ", " "], "975": [")~!#", "~||\\", " ", ""], "974": ["'~!(#", "'(||(", "  ", " "], "973": [",'~!(#", ",'(||(", "   ", "  "], "972": ["``~!(#", "``(||(", "  ", " "], "971": ["`~!(#", "`(||(", "  ", " "], "970": ["~!(#", "(||(", " ", ""], "969": [",~!(#", ",(||(", "  ", " "], "968": ["``!~#", "``/||~", "  ", " "], "967": ["`!~#", "`/||~", "  ", " "], "966": ["!~#", "/||~", " ", ""], "965": [",!~#", ",/||~", "  ", " "], "964": ["~~!#", "~||)", " ", ""], "963": [",~~!#", ",~||)", "  ", " "], "962": [",,~~!#", ",,~||)", "  ", " "], "961": ["`'\\!#", "`'||\\", "   ", "  "], "960": ["'\\!#", "'||\\", "  ", " "], "959": [")!~#", "(||", " ", ""], "958": ["``\\!#", "``||\\", "  ", " "], "957": ["`\\!#", "`||\\", "  ", " "], "956": ["\\!#", "||\\", " ", ""], "955": [",\\!#", ",||\\", "  ", " "], "954": [",,\\!#", ",,||\\", "  ", " "], "953": ["')\\!#", "')||)", "  ", " "], "952": [".\\!#", ".||\\", "  ", " "], "951": [",.\\!#", ",.||\\", "   ", "  "], "950": ["``)\\!#", "``)||)", "  ", " "], "949": ["`)\\!#", "`)||)", "  ", " "], "948": [")\\!#", ")||)", " ", ""], "947": ["`'!)#", "`'||)", "   ", "  "], "946": ["'!)#", "'||)", "  ", " "], "945": [",'!)#", ",'||)", "   ", "  "], "944": ["``!)#", "``||)", "  ", " "], "943": ["`!)#", "`||)", "  ", " "], "942": ["!)#", "||)", " ", ""], "941": [",!)#", ",||)", "  ", " "], "940": [",,!)#", ",,||)", "  ", " "], "939": ["`.!)#", "`.||)", "   ", "  "], "938": [".!)#", ".||)", "  ", " "], "937": [",.!)#", ",.||)", "   ", "  "], "936": ["`)!)#", "`)/||", "  ", " "], "935": [")!)#", ")/||", " ", ""], "934": ["'(!#", "')||~", "  ", " "], "933": ["!/#", "/||", " ", ""], "932": [",!/#", ",/||", "  ", " "], "931": ["`(!#", "`)||~", "  ", " "], "930": ["(!#", ")||~", " ", ""], "929": [",(!#", ",)||~", "  ", " "], "928": [",,(!#", ",,)||~", "  ", " "], "927": ["`.(!#", "`.)||~", "   ", "  "], "926": [".(!#", ".)||~", "  ", " "], "925": ["`~!)#", "`~~||", "  ", " "], "924": ["~!)#", "~~||", " ", ""], "923": [",~!)#", ",~~||", "  ", " "], "922": ["`'(!(#", "`'~||(", "   ", "  "], "921": ["'(!(#", "'~||(", "  ", " "], "920": [".~!)#", ".~~||", "  ", " "], "919": ["\\!~#", "||~", " ", ""], "918": ["``(!(#", "``~||(", "  ", " "], "917": ["`(!(#", "`~||(", "  ", " "], "916": ["(!(#", "~||(", " ", ""], "915": [",(!(#", ",~||(", "  ", " "], "914": ["~!/#", ")~||", " ", ""], "913": ["`'\\\\!#", "`')||(", "   ", "  "], "912": ["'\\\\!#", "')||(", "  ", " "], "911": [",'\\\\!#", ",')||(", "   ", "  "], "910": ["``\\\\!#", "``)||(", "  ", " "], "909": ["`\\\\!#", "`)||(", "  ", " "], "908": ["\\\\!#", ")||(", " ", ""], "907": [",\\\\!#", ",)||(", "  ", " "], "906": [",,\\\\!#", ",,)||(", "  ", " "], "905": ["`.\\\\!#", "`.)||(", "   ", "  "], "904": [".\\\\!#", ".)||(", "  ", " "], "2000": ["x", "/X\\", "", ""], "1999": [",!x", ",/X\\", "  ", " "], "1998": [",,!x", ",,/X\\", "  ", " "], "1997": ["')!x", "'(X~", "  ", " "], "1996": [".!x", "./X\\", "  ", " "], "1995": [",.!x", ",./X\\", "   ", "  "], "1994": ["`)!x", "`(X~", "  ", " "], "1993": [")!x", "(X~", " ", ""], "1992": [",)!x", ",(X~", "  ", " "], "1991": [",,)!x", ",,(X~", "  ", " "], "1990": ["``!(x", "``/X)", "  ", " "], "1989": ["`!(x", "`/X)", "  ", " "], "1988": ["!(x", "/X)", " ", ""], "1987": [",!(x", ",/X)", "  ", " "], "1986": ["'~!x", "')//X", "  ", " "], "1985": ["`.!(x", "`./X)", "   ", "  "], "1984": [".!(x", "./X)", "  ", " "], "1983": ["`~!x", "`)//X", "  ", " "], "1982": ["~!x", ")//X", " ", ""], "1981": ["`)!(x", "`//X", "  ", " "], "1980": [")!(x", "//X", " ", ""], "1979": [",)!(x", ",//X", "  ", " "], "1978": [",,)!(x", ",,//X", "  ", " "], "1977": ["`.)!(x", "`.//X", "   ", "  "], "1976": [".)!(x", ".//X", "  ", " "], "1975": [")~!x", "~X\\", " ", ""], "1974": ["'~!(x", "'(X(", "  ", " "], "1973": [",'~!(x", ",'(X(", "   ", "  "], "1972": ["``~!(x", "``(X(", "  ", " "], "1971": ["`~!(x", "`(X(", "  ", " "], "1970": ["~!(x", "(X(", " ", ""], "1969": [",~!(x", ",(X(", "  ", " "], "1968": ["``!~x", "``/X~", "  ", " "], "1967": ["`!~x", "`/X~", "  ", " "], "1966": ["!~x", "/X~", " ", ""], "1965": [",!~x", ",/X~", "  ", " "], "1964": ["~~!x", "~X)", " ", ""], "1963": [",~~!x", ",~X)", "  ", " "], "1962": [",,~~!x", ",,~X)", "  ", " "], "1961": ["`'\\!x", "`'X\\", "   ", "  "], "1960": ["'\\!x", "'X\\", "  ", " "], "1959": [")!~x", "(X", " ", ""], "1958": ["``\\!x", "``X\\", "  ", " "], "1957": ["`\\!x", "`X\\", "  ", " "], "1956": ["\\!x", "X\\", " ", ""], "1955": [",\\!x", ",X\\", "  ", " "], "1954": [",,\\!x", ",,X\\", "  ", " "], "1953": ["')\\!x", "')X)", "  ", " "], "1952": [".\\!x", ".X\\", "  ", " "], "1951": [",.\\!x", ",.X\\", "   ", "  "], "1950": ["``)\\!x", "``)X)", "  ", " "], "1949": ["`)\\!x", "`)X)", "  ", " "], "1948": [")\\!x", ")X)", " ", ""], "1947": ["`'!)x", "`'X)", "   ", "  "], "1946": ["'!)x", "'X)", "  ", " "], "1945": [",'!)x", ",'X)", "   ", "  "], "1944": ["``!)x", "``X)", "  ", " "], "1943": ["`!)x", "`X)", "  ", " "], "1942": ["!)x", "X)", " ", ""], "1941": [",!)x", ",X)", "  ", " "], "1940": [",,!)x", ",,X)", "  ", " "], "1939": ["`.!)x", "`.X)", "   ", "  "], "1938": [".!)x", ".X)", "  ", " "], "1937": [",.!)x", ",.X)", "   ", "  "], "1936": ["`)!)x", "`)/X", "  ", " "], "1935": [")!)x", ")/X", " ", ""], "1934": ["'(!x", "')X~", "  ", " "], "1933": ["!/x", "/X", " ", ""], "1932": [",!/x", ",/X", "  ", " "], "1931": ["`(!x", "`)X~", "  ", " "], "1930": ["(!x", ")X~", " ", ""], "1929": [",(!x", ",)X~", "  ", " "], "1928": [",,(!x", ",,)X~", "  ", " "], "1927": ["`.(!x", "`.)X~", "   ", "  "], "1926": [".(!x", ".)X~", "  ", " "], "1925": ["`~!)x", "`~~X", "  ", " "], "1924": ["~!)x", "~~X", " ", ""], "1923": [",~!)x", ",~~X", "  ", " "], "1922": ["`'(!(x", "`'~X(", "   ", "  "], "1921": ["'(!(x", "'~X(", "  ", " "], "1920": [".~!)x", ".~~X", "  ", " "], "1919": ["\\!~x", "X~", " ", ""], "1918": ["``(!(x", "``~X(", "  ", " "], "1917": ["`(!(x", "`~X(", "  ", " "], "1916": ["(!(x", "~X(", " ", ""], "1915": [",(!(x", ",~X(", "  ", " "], "1914": ["~!/x", ")~X", " ", ""], "1913": ["`'\\\\!x", "`')X(", "   ", "  "], "1912": ["'\\\\!x", "')X(", "  ", " "], "1911": [",'\\\\!x", ",')X(", "   ", "  "], "1910": ["``\\\\!x", "``)X(", "  ", " "], "1909": ["`\\\\!x", "`)X(", "  ", " "], "1908": ["\\\\!x", ")X(", " ", ""], "1907": [",\\\\!x", ",)X(", "  ", " "], "1906": [",,\\\\!x", ",,)X(", "  ", " "], "1905": ["`.\\\\!x", "`.)X(", "   ", "  "], "1904": [".\\\\!x", ".)X(", "  ", " "], "-1000": ["b", "\\!!/", "", ""], "-1001": [",!b", ",\\!!/", "  ", " "], "-1002": [",,!b", ",,\\!!/", "  ", " "], "-1003": ["')!b", "')!!!", "  ", " "], "-1004": [".!b", ".\\!!/", "  ", " "], "-1005": [",.!b", ",.\\!!/", "   ", "  "], "-1006": ["`)!b", "`)!!!", "  ", " "], "-1007": [")!b", ")!!!", " ", ""], "-1008": [",)!b", ",)!!!", "  ", " "], "-1009": [",,)!b", ",,)!!!", "  ", " "], "-1010": ["``!(b", "``!!!(", "  ", " "], "-1011": ["`!(b", "`!!!(", "  ", " "], "-1012": ["!(b", "!!!(", " ", ""], "-1013": [",!(b", ",!!!(", "  ", " "], "-1014": ["'~!b", "'~!!!", "  ", " "], "-1015": ["`.!(b", "`.!!!(", "   ", "  "], "-1016": [".!(b", ".!!!(", "  ", " "], "-1017": ["`~!b", "`~!!!", "  ", " "], "-1018": ["~!b", "~!!!", " ", ""], "-1019": ["`)!(b", "`)!!!(", "  ", " "], "-1020": [")!(b", ")!!!(", " ", ""], "-1021": [",)!(b", ",)!!!(", "  ", " "], "-1022": [",,)!(b", ",,)!!!(", "  ", " "], "-1023": ["`.)!(b", "`.)!!!(", "   ", "  "], "-1024": [".)!(b", ".)!!!(", "  ", " "], "-1025": [")~!b", ")~!!!", " ", ""], "-1026": ["'~!(b", "'~!!!(", "  ", " "], "-1027": [",'~!(b", ",'~!!!(", "   ", "  "], "-1028": ["``~!(b", "``~!!!(", "  ", " "], "-1029": ["`~!(b", "`~!!!(", "  ", " "], "-1030": ["~!(b", "~!!!(", " ", ""], "-1031": [",~!(b", ",~!!!(", "  ", " "], "-1032": ["``!~b", "``!!!~", "  ", " "], "-1033": ["`!~b", "`!!!~", "  ", " "], "-1034": ["!~b", "!!!~", " ", ""], "-1035": [",!~b", ",!!!~", "  ", " "], "-1036": ["~~!b", "~~!!!", " ", ""], "-1037": [",~~!b", ",~~!!!", "  ", " "], "-1038": [",,~~!b", ",,~~!!!", "  ", " "], "-1039": ["`'\\!b", "`'\\!!!", "   ", "  "], "-1040": ["'\\!b", "'\\!!!", "  ", " "], "-1041": [")!~b", ")!!!~", " ", ""], "-1042": ["``\\!b", "``\\!!!", "  ", " "], "-1043": ["`\\!b", "`\\!!!", "  ", " "], "-1044": ["\\!b", "\\!!!", " ", ""], "-1045": [",\\!b", ",\\!!!", "  ", " "], "-1046": [",,\\!b", ",,\\!!!", "  ", " "], "-1047": ["')\\!b", "')\\!!!", "  ", " "], "-1048": [".\\!b", ".\\!!!", "  ", " "], "-1049": [",.\\!b", ",.\\!!!", "   ", "  "], "-1050": ["``)\\!b", "``)\\!!!", "  ", " "], "-1051": ["`)\\!b", "`)\\!!!", "  ", " "], "-1052": [")\\!b", ")\\!!!", " ", ""], "-1053": ["`'!)b", "`'!!!)", "   ", "  "], "-1054": ["'!)b", "'!!!)", "  ", " "], "-1055": [",'!)b", ",'!!!)", "   ", "  "], "-1056": ["``!)b", "``!!!)", "  ", " "], "-1057": ["`!)b", "`!!!)", "  ", " "], "-1058": ["!)b", "!!!)", " ", ""], "-1059": [",!)b", ",!!!)", "  ", " "], "-1060": [",,!)b", ",,!!!)", "  ", " "], "-1061": ["`.!)b", "`.!!!)", "   ", "  "], "-1062": [".!)b", ".!!!)", "  ", " "], "-1063": [",.!)b", ",.!!!)", "   ", "  "], "-1064": ["`)!)b", "`)!!!)", "  ", " "], "-1065": [")!)b", ")!!!)", " ", ""], "-1066": ["'(!b", "'(!!!", "  ", " "], "-1067": ["!/b", "!!!/", " ", ""], "-1068": [",!/b", ",!!!/", "  ", " "], "-1069": ["`(!b", "`(!!!", "  ", " "], "-1070": ["(!b", "(!!!", " ", ""], "-1071": [",(!b", ",(!!!", "  ", " "], "-1072": [",,(!b", ",,(!!!", "  ", " "], "-1073": ["`.(!b", "`.(!!!", "   ", "  "], "-1074": [".(!b", ".(!!!", "  ", " "], "-1075": ["`~!)b", "`~!!!)", "  ", " "], "-1076": ["~!)b", "~!!!)", " ", ""], "-1077": [",~!)b", ",~!!!)", "  ", " "], "-1078": ["`'(!(b", "`'(!!!(", "   ", "  "], "-1079": ["'(!(b", "'(!!!(", "  ", " "], "-1080": [".~!)b", ".~!!!)", "  ", " "], "-1081": ["\\!~b", "\\!!!~", " ", ""], "-1082": ["``(!(b", "``(!!!(", "  ", " "], "-1083": ["`(!(b", "`(!!!(", "  ", " "], "-1084": ["(!(b", "(!!!(", " ", ""], "-1085": [",(!(b", ",(!!!(", "  ", " "], "-1086": ["~!/b", "~!!!/", " ", ""], "-1087": ["`'\\\\!b", "`'\\\\!!!", "   ", "  "], "-1088": ["'\\\\!b", "'\\\\!!!", "  ", " "], "-1089": [",'\\\\!b", ",'\\\\!!!", "   ", "  "], "-1090": ["``\\\\!b", "``\\\\!!!", "  ", " "], "-1091": ["`\\\\!b", "`\\\\!!!", "  ", " "], "-1092": ["\\\\!b", "\\\\!!!", " ", ""], "-1093": [",\\\\!b", ",\\\\!!!", "  ", " "], "-1094": [",,\\\\!b", ",,\\\\!!!", "  ", " "], "-1095": ["`.\\\\!b", "`.\\\\!!!", "   ", "  "], "-1096": [".\\\\!b", ".\\\\!!!", "  ", " "], "-1097": ["``)\\\\!b", "``)\\\\!!!", "  ", " "], "-1098": ["`)\\\\!b", "`)\\\\!!!", "  ", " "], "-1099": [")\\\\!b", ")\\\\!!!", " ", ""], "-1100": [",)\\\\!b", ",)\\\\!!!", "  ", " "], "-1101": [",,)\\\\!b", ",,)\\\\!!!", "  ", " "], "-1102": ["``\\!)b", "``\\!!!)", "  ", " "], "-1103": ["`\\!)b", "`\\!!!)", "  ", " "], "-1104": ["\\!)b", "\\!!!)", " ", ""], "-1105": [",\\!)b", ",\\!!!)", "  ", " "], "-1106": ["(!~b", "(!!!~", " ", ""], "-1107": ["`.\\!)b", "`.\\!!!)", "   ", "  "], "-1108": [".\\!)b", ".\\!!!)", "  ", " "], "-1109": [",.\\!)b", ",.\\!!!)", "   ", "  "], "-1110": ["'\\!/b", "'\\!!!/", "  ", " "], "-1111": [",'\\!/b", ",'\\!!!/", "   ", "  "], "-1112": ["``\\!/b", "``\\!!!/", "  ", " "], "-1113": ["`\\!/b", "`\\!!!/", "  ", " "], "-1114": ["\\!/b", "\\!!!/", " ", ""], "-1115": [",\\!/b", ",\\!!!/", "  ", " "], "-1116": ["`(\\!b", "`(\\!!!", "  ", " "], "-1117": ["(\\!b", "(\\!!!", " ", ""], "-1118": [",(\\!b", ",(\\!!!", "  ", " "], "-1119": [".\\!/b", ".\\!!!/", "  ", " "], "-1120": [",.\\!/b", ",.\\!!!/", "   ", "  "], "-1121": ["`)\\!/b", "`)\\!!!/", "  ", " "], "-1122": [")\\!/b", ")\\!!!/", " ", ""], "-1123": [",)\\!/b", ",)\\!!!/", "  ", " "], "-1124": [",,)\\!/b", ",,)\\!!!/", "  ", " "], "-1125": ["`'(!)b", "`'(!!!)", "   ", "  "], "-1126": ["'(!)b", "'(!!!)", "  ", " "], "-1127": ["`!/)b", "`!!!/)", "  ", " "], "-1128": ["!/)b", "!!!/)", " ", ""], "-1129": [",!/)b", ",!!!/)", "  ", " "], "-1130": ["`(!)b", "`(!!!)", "  ", " "], "-1131": ["(!)b", "(!!!)", " ", ""], "-1132": [",(!)b", ",(!!!)", "  ", " "], "-1133": [",,(!)b", ",,(!!!)", "  ", " "], "-1134": ["`.(!)b", "`.(!!!)", "   ", "  "], "-1135": [".(!)b", ".(!!!)", "  ", " "], "-1136": ["`'(!/b", "`'(!!!/", "   ", "  "], "-1137": ["'(!/b", "'(!!!/", "  ", " "], "-1138": [",'(!/b", ",'(!!!/", "   ", "  "], "-1139": ["!//b", "!!!//", " ", ""], "-1140": ["`(!/b", "`(!!!/", "  ", " "], "-1141": ["(!/b", "(!!!/", " ", ""], "-1142": [",(!/b", ",(!!!/", "  ", " "], "-1143": [",,(!/b", ",,(!!!/", "  ", " "], "-1144": ["``)!//b", "``)!!!//", "  ", " "], "-1145": ["`)!//b", "`)!!!//", "  ", " "], "-1146": [")!//b", ")!!!//", " ", ""], "-1147": [",)!//b", ",)!!!//", "  ", " "], "-1148": [",,)!//b", ",,)!!!//", "  ", " "], "-999": ["`|b", "`\\!!/", "  ", " "], "-998": ["``|b", "``\\!!/", "  ", " "], "-997": [".)|b", ".(!!~", "  ", " "], "-996": ["'|b", "'\\!!/", "  ", " "], "-995": ["`'|b", "`'\\!!/", "   ", "  "], "-994": [",)|b", ",(!!~", "  ", " "], "-993": [")|b", "(!!~", " ", ""], "-992": ["`)|b", "`(!!~", "  ", " "], "-991": ["``)|b", "``(!!~", "  ", " "], "-990": [",,|(b", ",,\\!!)", "  ", " "], "-989": [",|(b", ",\\!!)", "  ", " "], "-988": ["|(b", "\\!!)", " ", ""], "-987": ["`|(b", "`\\!!)", "  ", " "], "-986": [".~|b", ".)\\\\!!", "  ", " "], "-985": [",'|(b", ",'\\!!)", "   ", "  "], "-984": ["'|(b", "'\\!!)", "  ", " "], "-983": [",~|b", ",)\\\\!!", "  ", " "], "-982": ["~|b", ")\\\\!!", " ", ""], "-981": [",)|(b", ",\\\\!!", "  ", " "], "-980": [")|(b", "\\\\!!", " ", ""], "-979": ["`)|(b", "`\\\\!!", "  ", " "], "-978": ["``)|(b", "``\\\\!!", "  ", " "], "-977": [",')|(b", ",'\\\\!!", "   ", "  "], "-976": ["')|(b", "'\\\\!!", "  ", " "], "-975": [")~|b", "~!!/", " ", ""], "-974": [".~|(b", ".(!!(", "  ", " "], "-973": ["`.~|(b", "`.(!!(", "   ", "  "], "-972": [",,~|(b", ",,(!!(", "  ", " "], "-971": [",~|(b", ",(!!(", "  ", " "], "-970": ["~|(b", "(!!(", " ", ""], "-969": ["`~|(b", "`(!!(", "  ", " "], "-968": [",,|~b", ",,\\!!~", "  ", " "], "-967": [",|~b", ",\\!!~", "  ", " "], "-966": ["|~b", "\\!!~", " ", ""], "-965": ["`|~b", "`\\!!~", "  ", " "], "-964": ["~~|b", "~!!)", " ", ""], "-963": ["`~~|b", "`~!!)", "  ", " "], "-962": ["``~~|b", "``~!!)", "  ", " "], "-961": [",./|b", ",.!!/", "   ", "  "], "-960": ["./|b", ".!!/", "  ", " "], "-959": [")|~b", "(!!", " ", ""], "-958": [",,/|b", ",,!!/", "  ", " "], "-957": [",/|b", ",!!/", "  ", " "], "-956": ["/|b", "!!/", " ", ""], "-955": ["`/|b", "`!!/", "  ", " "], "-954": ["``/|b", "``!!/", "  ", " "], "-953": [".)/|b", ".)!!)", "  ", " "], "-952": ["'/|b", "'!!/", "  ", " "], "-951": ["`'/|b", "`'!!/", "   ", "  "], "-950": [",,)/|b", ",,)!!)", "  ", " "], "-949": [",)/|b", ",)!!)", "  ", " "], "-948": [")/|b", ")!!)", " ", ""], "-947": [",.|)b", ",.!!)", "   ", "  "], "-946": [".|)b", ".!!)", "  ", " "], "-945": ["`.|)b", "`.!!)", "   ", "  "], "-944": [",,|)b", ",,!!)", "  ", " "], "-943": [",|)b", ",!!)", "  ", " "], "-942": ["|)b", "!!)", " ", ""], "-941": ["`|)b", "`!!)", "  ", " "], "-940": ["``|)b", "``!!)", "  ", " "], "-939": [",'|)b", ",'!!)", "   ", "  "], "-938": ["'|)b", "'!!)", "  ", " "], "-937": ["`'|)b", "`'!!)", "   ", "  "], "-936": [",)|)b", ",)\\!!", "  ", " "], "-935": [")|)b", ")\\!!", " ", ""], "-934": [".(|b", ".)!!~", "  ", " "], "-933": ["|\\b", "\\!!", " ", ""], "-932": ["`|\\b", "`\\!!", "  ", " "], "-931": [",(|b", ",)!!~", "  ", " "], "-930": ["(|b", ")!!~", " ", ""], "-929": ["`(|b", "`)!!~", "  ", " "], "-928": ["``(|b", "``)!!~", "  ", " "], "-927": [",'(|b", ",')!!~", "   ", "  "], "-926": ["'(|b", "')!!~", "  ", " "], "-925": [",~|)b", ",~~!!", "  ", " "], "-924": ["~|)b", "~~!!", " ", ""], "-923": ["`~|)b", "`~~!!", "  ", " "], "-922": [",.(|(b", ",.~!!(", "   ", "  "], "-921": [".(|(b", ".~!!(", "  ", " "], "-920": ["'~|)b", "'~~!!", "  ", " "], "-919": ["/|~b", "!!~", " ", ""], "-918": [",,(|(b", ",,~!!(", "  ", " "], "-917": [",(|(b", ",~!!(", "  ", " "], "-916": ["(|(b", "~!!(", " ", ""], "-915": ["`(|(b", "`~!!(", "  ", " "], "-914": ["~|\\b", ")~!!", " ", ""], "-913": [",.//|b", ",.)!!(", "   ", "  "], "-912": [".//|b", ".)!!(", "  ", " "], "-911": ["`.//|b", "`.)!!(", "   ", "  "], "-910": [",,//|b", ",,)!!(", "  ", " "], "-909": [",//|b", ",)!!(", "  ", " "], "-908": ["//|b", ")!!(", " ", ""], "-907": ["`//|b", "`)!!(", "  ", " "], "-906": ["``//|b", "``)!!(", "  ", " "], "-905": [",'//|b", ",')!!(", "   ", "  "], "-904": ["'//|b", "')!!(", "  ", " "], "-2000": ["bb", "\\Y/", "", ""], "-1999": ["`|bb", "`\\Y/", "  ", " "], "-1998": ["``|bb", "``\\Y/", "  ", " "], "-1997": [".)|bb", ".(Y~", "  ", " "], "-1996": ["'|bb", "'\\Y/", "  ", " "], "-1995": ["`'|bb", "`'\\Y/", "   ", "  "], "-1994": [",)|bb", ",(Y~", "  ", " "], "-1993": [")|bb", "(Y~", " ", ""], "-1992": ["`)|bb", "`(Y~", "  ", " "], "-1991": ["``)|bb", "``(Y~", "  ", " "], "-1990": [",,|(bb", ",,\\Y)", "  ", " "], "-1989": [",|(bb", ",\\Y)", "  ", " "], "-1988": ["|(bb", "\\Y)", " ", ""], "-1987": ["`|(bb", "`\\Y)", "  ", " "], "-1986": [".~|bb", ".)\\\\Y", "  ", " "], "-1985": [",'|(bb", ",'\\Y)", "   ", "  "], "-1984": ["'|(bb", "'\\Y)", "  ", " "], "-1983": [",~|bb", ",)\\\\Y", "  ", " "], "-1982": ["~|bb", ")\\\\Y", " ", ""], "-1981": [",)|(bb", ",\\\\Y", "  ", " "], "-1980": [")|(bb", "\\\\Y", " ", ""], "-1979": ["`)|(bb", "`\\\\Y", "  ", " "], "-1978": ["``)|(bb", "``\\\\Y", "  ", " "], "-1977": [",')|(bb", ",'\\\\Y", "   ", "  "], "-1976": ["')|(bb", "'\\\\Y", "  ", " "], "-1975": [")~|bb", "~Y/", " ", ""], "-1974": [".~|(bb", ".(Y(", "  ", " "], "-1973": ["`.~|(bb", "`.(Y(", "   ", "  "], "-1972": [",,~|(bb", ",,(Y(", "  ", " "], "-1971": [",~|(bb", ",(Y(", "  ", " "], "-1970": ["~|(bb", "(Y(", " ", ""], "-1969": ["`~|(bb", "`(Y(", "  ", " "], "-1968": [",,|~bb", ",,\\Y~", "  ", " "], "-1967": [",|~bb", ",\\Y~", "  ", " "], "-1966": ["|~bb", "\\Y~", " ", ""], "-1965": ["`|~bb", "`\\Y~", "  ", " "], "-1964": ["~~|bb", "~Y)", " ", ""], "-1963": ["`~~|bb", "`~Y)", "  ", " "], "-1962": ["``~~|bb", "``~Y)", "  ", " "], "-1961": [",./|bb", ",.Y/", "   ", "  "], "-1960": ["./|bb", ".Y/", "  ", " "], "-1959": [")|~bb", "(Y", " ", ""], "-1958": [",,/|bb", ",,Y/", "  ", " "], "-1957": [",/|bb", ",Y/", "  ", " "], "-1956": ["/|bb", "Y/", " ", ""], "-1955": ["`/|bb", "`Y/", "  ", " "], "-1954": ["``/|bb", "``Y/", "  ", " "], "-1953": [".)/|bb", ".)Y)", "  ", " "], "-1952": ["'/|bb", "'Y/", "  ", " "], "-1951": ["`'/|bb", "`'Y/", "   ", "  "], "-1950": [",,)/|bb", ",,)Y)", "  ", " "], "-1949": [",)/|bb", ",)Y)", "  ", " "], "-1948": [")/|bb", ")Y)", " ", ""], "-1947": [",.|)bb", ",.Y)", "   ", "  "], "-1946": [".|)bb", ".Y)", "  ", " "], "-1945": ["`.|)bb", "`.Y)", "   ", "  "], "-1944": [",,|)bb", ",,Y)", "  ", " "], "-1943": [",|)bb", ",Y)", "  ", " "], "-1942": ["|)bb", "Y)", " ", ""], "-1941": ["`|)bb", "`Y)", "  ", " "], "-1940": ["``|)bb", "``Y)", "  ", " "], "-1939": [",'|)bb", ",'Y)", "   ", "  "], "-1938": ["'|)bb", "'Y)", "  ", " "], "-1937": ["`'|)bb", "`'Y)", "   ", "  "], "-1936": [",)|)bb", ",)\\Y", "  ", " "], "-1935": [")|)bb", ")\\Y", " ", ""], "-1934": [".(|bb", ".)Y~", "  ", " "], "-1933": ["|\\bb", "\\Y", " ", ""], "-1932": ["`|\\bb", "`\\Y", "  ", " "], "-1931": [",(|bb", ",)Y~", "  ", " "], "-1930": ["(|bb", ")Y~", " ", ""], "-1929": ["`(|bb", "`)Y~", "  ", " "], "-1928": ["``(|bb", "``)Y~", "  ", " "], "-1927": [",'(|bb", ",')Y~", "   ", "  "], "-1926": ["'(|bb", "')Y~", "  ", " "], "-1925": [",~|)bb", ",~~Y", "  ", " "], "-1924": ["~|)bb", "~~Y", " ", ""], "-1923": ["`~|)bb", "`~~Y", "  ", " "], "-1922": [",.(|(bb", ",.~Y(", "   ", "  "], "-1921": [".(|(bb", ".~Y(", "  ", " "], "-1920": ["'~|)bb", "'~~Y", "  ", " "], "-1919": ["/|~bb", "Y~", " ", ""], "-1918": [",,(|(bb", ",,~Y(", "  ", " "], "-1917": [",(|(bb", ",~Y(", "  ", " "], "-1916": ["(|(bb", "~Y(", " ", ""], "-1915": ["`(|(bb", "`~Y(", "  ", " "], "-1914": ["~|\\bb", ")~Y", " ", ""], "-1913": [",.//|bb", ",.)Y(", "   ", "  "], "-1912": [".//|bb", ".)Y(", "  ", " "], "-1911": ["`.//|bb", "`.)Y(", "   ", "  "], "-1910": [",,//|bb", ",,)Y(", "  ", " "], "-1909": [",//|bb", ",)Y(", "  ", " "], "-1908": ["//|bb", ")Y(", " ", ""], "-1907": ["`//|bb", "`)Y(", "  ", " "], "-1906": ["``//|bb", "``)Y(", "  ", " "], "-1905": [",'//|bb", ",')Y(", "   ", "  "], "-1904": ["'//|bb", "')Y(", "  ", " "]}, "levels": [{"level": "medium", "label": "Medium", "symbolSet": "Athenian", "limit": 17, "resolution": 5.41, "diacritics": "none", "steps": 21}, {"level": "high", "label": "High*", "symbolSet": "Promethean", "limit": 23, "resolution": 2.42, "diacritics": "none", "steps": 47}, {"level": "ultra", "label": "Ultra", "symbolSet": "Herculean", "limit": 23, "resolution": 1.96, "diacritics": "accents", "steps": 58}, {"level": "extreme", "label": "Extreme**", "symbolSet": "Olympian", "limit": 47, "resolution": 0.49, "diacritics": "accents & breves", "steps": 233}], "primes": [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61]};
+if (typeof module !== "undefined") module.exports = SAG_DATA;</script>
+<script>/* Sagittal Standard JI Notation Calculator — computation core.
+ * A direct port of the workbook's Calculator-sheet formulas; every function
+ * mirrors a spreadsheet cell, preserving Excel's MOD/ROUND/VLOOKUP semantics.
+ */
+"use strict";
+
+const SAG = (() => {
+  const D = typeof SAG_DATA !== "undefined" ? SAG_DATA : require("./data.js");
+
+  const LN2 = Math.LN2;
+  const APOTOME = (Math.log(3) / LN2 * 7 - 11) * 1200;          // Calculator!AD2
+  const bounds = D.bounds;
+  const extreme = bounds.extreme;
+  const CENTS_MAX = extreme[extreme.length - 1][0] + 0.000000001; // Calculator!AD3
+  const MAX_FRAC = CENTS_MAX / APOTOME;                           // Calculator!AD4
+
+  // Excel MOD: result has the divisor's sign.
+  const excelMod = (a, b) => a - b * Math.floor(a / b);
+  // Excel ROUND: half away from zero.
+  const excelRound = (x, digits) => {
+    const m = Math.pow(10, digits);
+    return Math.sign(x) * Math.round(Math.abs(x) * m) / m;
+  };
+
+  // Calculator!A1 chain of fifths; FIND(entry)-46)/3 = fifths above C.
+  const FIFTHS = D.fifthsString;
+  function fifthsAboveC(name) {
+    const padded = name + "   ".slice(name.length);
+    const pos = FIFTHS.indexOf(padded);
+    if (pos < 0) return null; // Excel FIND would raise #VALUE!
+    return (pos + 1 - 46) / 3;
+  }
+
+  // VLOOKUP(value, bounds, 2, TRUE): key of the largest lower-bound <= value.
+  function lookupKey(value, rows) {
+    if (value < rows[0][0]) return null; // Excel would raise #N/A
+    let lo = 0, hi = rows.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (rows[mid][0] <= value) lo = mid; else hi = mid - 1;
+    }
+    return rows[lo][1];
+  }
+
+  const NOMINALS = [
+    // [letter, base-cents ratio [num, den], wrap: +1 / -1 / 0 octaves]
+    ["C", [1, 1], +1],
+    ["D", [9, 8], +1],
+    ["E", [81, 64], 0],
+    ["F", [4, 3], 0],
+    ["G", [3, 2], 0],
+    ["A", [27, 16], 0],
+    ["B", [243, 128], -1],
+  ];
+
+  const SF_SHIFT = { x: 2000, "#": 1000, "": 0, b: -1000, bb: -2000 };
+  const LEVELS = ["medium", "high", "ultra", "extreme"];
+
+  function keyRow(fullKey) {
+    const row = D.key[fullKey];
+    return row || null; // Excel VLOOKUP FALSE would raise #N/A
+  }
+
+  /**
+   * inputs: { exps: {3: int, 5: int, ...}, num, den, nominal }
+   * Mirrors UI rows 9..15 (Calculator rows 6..12).
+   */
+  function compute(inputs) {
+    const nominalFifths = fifthsAboveC(inputs.nominal);
+    if (nominalFifths === null) {
+      return { error: "1/1 nominal must be one of bbF ... xB (e.g. C, D, bE, #F)." };
+    }
+    const num = Number(inputs.num), den = Number(inputs.den);
+    if (!(num > 0) || !(den > 0)) {
+      return { error: "Numerator and denominator must be positive numbers." };
+    }
+
+    // Calculator!AG2/AG3/AG4 in log2 domain (avoids overflow for big exponents).
+    let log2Total = Math.log(num / den) / LN2;
+    for (const p of D.primes) {
+      const e = Number(inputs.exps[p] || 0);
+      if (!Number.isFinite(e)) return { error: "Exponents must be numbers." };
+      if (e !== 0) log2Total += e * (Math.log(p) / LN2);
+    }
+    if (!Number.isFinite(log2Total)) {
+      return { error: "Pitch is out of numeric range." };
+    }
+
+    const exp3 = Number(inputs.exps[3] || 0);
+    const centsAbove11 = excelMod(1200 * log2Total, 1200);              // AG5
+    const fifths11 = exp3 + nominalFifths;                              // AJ2
+    const cents8 = excelMod(
+      1200 * (log2Total + nominalFifths * (Math.log(3) / LN2)), 1200);  // AG8
+
+    const rows = [];
+    for (const [letter, [rn, rd], wrap] of NOMINALS) {
+      let base = 1200 * (Math.log(rn / rd) / LN2);                      // A col
+      if (wrap === +1 && Math.abs(cents8 - base - 1200) < 300) base += 1200;
+      if (wrap === -1 && Math.abs(cents8 - base + 1200) < 300) base -= 1200;
+
+      const inRange = !(Math.abs(cents8 - base) > 2.000001 * APOTOME);  // B col
+      const row = {
+        letter: inRange ? letter : "",
+        notehead: inRange ? D.noteheads[letter] : "",
+        levels: {},
+      };
+
+      let sf = "";                                                      // D col
+      if (inRange) {
+        if (cents8 - base > APOTOME * (1 + MAX_FRAC)) sf = "x";
+        else if (cents8 - base > APOTOME * MAX_FRAC) sf = "#";
+        else if (base - cents8 > APOTOME * (1 + MAX_FRAC)) sf = "bb";
+        else if (base - cents8 > APOTOME * MAX_FRAC) sf = "b";
+      }
+      const shift = SF_SHIFT[sf];                                       // E col
+      let adjusted = "";                                                // F col
+      if (inRange) {
+        if (cents8 - base > APOTOME * (1 + MAX_FRAC)) adjusted = base + APOTOME * 2;
+        else if (cents8 - base > APOTOME * MAX_FRAC) adjusted = base + APOTOME;
+        else if (base - cents8 > APOTOME * (1 + MAX_FRAC)) adjusted = base - 2 * APOTOME;
+        else if (base - cents8 > APOTOME * MAX_FRAC) adjusted = base - APOTOME;
+        else adjusted = base;
+      }
+      const alteration = !inRange ? ""                                  // G col
+        : (excelRound(cents8 - adjusted, 3) === 0 ? 0 : cents8 - adjusted);
+      row.sharpFlat = sf;
+      row.alteration = alteration;
+
+      row.fifthsCount = inRange                                         // AB col
+        ? exp3 + fifthsAboveC(sf + letter) - fifths11
+        : "";
+
+      for (const level of LEVELS) {
+        const tbl = bounds[level];
+        let key;                                                        // I col
+        if (alteration === "") key = "";
+        else if (excelRound(alteration, 3) === 0) key = 0;
+        else if (alteration > 0) key = lookupKey(alteration, tbl);
+        else key = -lookupKey(-alteration, tbl);
+        const fullKey = alteration === "" ? 0 : key + shift;            // H col
+
+        let comma;                                                      // K col
+        if (key === "" || key === 0) comma = "";
+        else if (key > 0) comma = D.commas[key].cents;
+        else comma = -D.commas[-key].cents;
+
+        // L/Q cols (medium, high) fall back to the alteration when the comma
+        // is blank; V/AA cols (ultra, extreme) fall back to 0.
+        let error;
+        if (!inRange) error = "";
+        else if (alteration === "") error = 0;
+        else if (comma === "") {
+          error = (level === "medium" || level === "high") ? alteration : 0;
+        } else error = Math.abs(alteration - comma);
+
+        const k = keyRow(fullKey);
+        row.levels[level] = {
+          evoAscii: k ? k[0] + row.letter : "#N/A",
+          revoAscii: k ? k[1] + row.letter : "#N/A",
+          evoUnicode: k ? k[2] + row.notehead : "#N/A",
+          revoUnicode: k ? k[3] + row.notehead : "#N/A",
+          error,
+        };
+      }
+      rows.push(row);
+    }
+
+    return { centsAbove11, rows };
+  }
+
+  return { compute, APOTOME, CENTS_MAX, MAX_FRAC, data: D,
+           excelMod, excelRound, fifthsAboveC };
+})();
+
+if (typeof module !== "undefined") module.exports = SAG;</script>
+<script>
+"use strict";
+(() => {
+  const D = SAG_DATA;
+  const P = D.primes;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const CHEV = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">'
+    + '<path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" '
+    + 'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const COPY_ICON = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">'
+    + '<rect x="5.6" y="5.6" width="8.2" height="9" rx="1.5" fill="none" '
+    + 'stroke="currentColor" stroke-width="1.4"/>'
+    + '<path d="M10.6 3.4H3.7a1.3 1.3 0 0 0-1.3 1.3v7.6" fill="none" '
+    + 'stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+  const DONE_ICON = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">'
+    + '<path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" '
+    + 'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  const APOTOME = SAG.APOTOME;
+  // SMuFL accidentals, for spelling nominals with real symbols
+  const ACC_GLYPH = { bb: "", b: "", "": "", "#": "", x: "" };
+
+  const REPRESENT_TIP =
+    "The exact alteration, in cents, that this row's single-shaft Sagittal has to "
+    + "stand for — the distance from the plain Pythagorean nominal (after any sharp or "
+    + "flat) up or down to your pitch. The level then offers the nearest symbol it "
+    + "actually has, and the Error column is how far that symbol's own defined comma "
+    + "lands from this figure. (The spreadsheet's “Single-shaft Sagittals are "
+    + "Representing (¢)” column.)";
+
+  const LEVEL_TIPS = {
+    medium: "The medium precision level, whose maximum symbol set is the Athenian. "
+      + "From the Xenharmonikôn article: it is expected that the overwhelming majority "
+      + "of users will conclude that the Athenian JI symbol set is quite acceptable for "
+      + "their purposes, with higher precision symbol sets being necessary only for "
+      + "certain theoretical (or other special) applications.",
+    high: "The high precision level, whose maximum symbol set is the Promethean — the "
+      + "most precise level that needs no diacritics. Not recommended: Dave Keenan's "
+      + "guidance for this spreadsheet was that “the Promethean level is not "
+      + "recommended”. Use Medium for general purposes, or Ultra/Extreme when you "
+      + "genuinely need finer resolution.",
+    ultra: "The ultra precision level, whose maximum symbol set is the Herculean — the "
+      + "Promethean symbols extended with accent diacritics.",
+    extreme: "The extreme precision level, whose maximum symbol set is the Olympian, "
+      + "adding accents and breves (mina diacritics). Its symbol boundaries are defined "
+      + "on 809 divisions of the apotome (Magrathean) rather than its own 233, so that "
+      + "neighbouring commas such as 5C (80:81) and 41C (81:82) stay distinct.",
+  };
+
+  // The quoted resolution is apotome ÷ steps; the real boundaries come from the
+  // commas the symbols stand for, so state the actual spread alongside it.
+  function resolutionTip(m) {
+    const rows = D.bounds[m.level];
+    let lo = Infinity, hi = 0;
+    for (let i = 1; i < rows.length; i++) {
+      const g = rows[i][0] - rows[i - 1][0];
+      if (g < lo) lo = g;
+      if (g > hi) hi = g;
+    }
+    const name = m.label.replace(/\*+$/, "");
+    return "The " + name + " level's symbols are laid out on a " + m.steps
+      + "-fold equal division of the apotome (" + m.steps + "-EDA), and the figure "
+      + "given here is just that apotome, " + APOTOME.toFixed(3) + "¢, divided by "
+      + m.steps + " — one step of that division. It is marked approximate because the "
+      + "symbols are not in fact evenly spaced: each one is defined by the comma it "
+      + "represents, so the real gaps between neighbouring symbol boundaries run from "
+      + lo.toFixed(2) + "¢ to " + hi.toFixed(2) + "¢. Read it as the typical spacing; "
+      + "the Error column gives the exact miss on your pitch.";
+  }
+
+  // ---------- prime / exponent vector ----------
+  const vec = $("vec");
+  const expInputs = {};
+  const expCells = {};
+  for (const [text, cls] of [["Prime", "vec-lab-prime"], ["Exponent", "vec-lab-exp"]]) {
+    const el = document.createElement("p");
+    el.className = "field-label vec-lab " + cls;
+    el.textContent = text;
+    vec.appendChild(el);
+  }
+  for (const p of P) {
+    const lab = document.createElement("span");
+    lab.className = "p";
+    lab.textContent = p;
+    const inp = document.createElement("input");
+    inp.value = "0";
+    inp.inputMode = "numeric";
+    inp.setAttribute("aria-label", "Exponent of prime " + p);
+    vec.appendChild(lab);
+    vec.appendChild(inp);
+    expInputs[p] = inp;
+    expCells[p] = [lab, inp];
+  }
+
+  const DEFAULT_VISIBLE = P.indexOf(17) + 1;
+  let visible = DEFAULT_VISIBLE;
+
+  function setVisible(n) {
+    visible = Math.max(1, Math.min(P.length, n));
+    P.forEach((p, i) => {
+      const shown = i < visible;
+      for (const el of expCells[p]) el.hidden = !shown;
+      const removable = shown && i > 0;   // a monzo needs at least one slot
+      expCells[p][0].classList.toggle("removable", removable);
+      expCells[p][0].tabIndex = removable ? 0 : -1;
+      expCells[p][0].title = removable
+        ? "Remove prime " + p + (i < visible - 1 ? " and the primes above it" : "") : "";
+    });
+    const maxed = visible >= P.length;
+    $("add-prime").disabled = maxed;
+    $("add-prime").dataset.tip = maxed
+      ? "61 is as far as the spreadsheet's vector goes. It is already well past the "
+        + "notation's own reach — Extreme, the finest level, is only 47-limit — so "
+        + "anything above this would have no symbols to be notated with anyway."
+      : "Add prime " + P[visible] + " to the vector.";
+  }
+
+  function markDoomed(fromIdx, on) {
+    P.forEach((p, i) => {
+      const doomed = on && i >= fromIdx && i < visible;
+      for (const el of expCells[p]) el.classList.toggle("doomed", doomed);
+    });
+  }
+
+  function removeFrom(idx) {
+    if (idx < 1) return;
+    for (let i = idx; i < P.length; i++) expInputs[P[i]].value = "0";
+    markDoomed(idx, false);
+    setVisible(idx);
+    onVectorInput();
+  }
+
+  vec.addEventListener("mouseover", (e) => {
+    const lab = e.target.closest(".p.removable");
+    if (lab) markDoomed(P.indexOf(Number(lab.textContent)), true);
+  });
+  vec.addEventListener("mouseout", (e) => {
+    if (e.target.closest(".p.removable")) markDoomed(0, false);
+  });
+  vec.addEventListener("click", (e) => {
+    const lab = e.target.closest(".p.removable");
+    if (lab) removeFrom(P.indexOf(Number(lab.textContent)));
+  });
+  vec.addEventListener("keydown", (e) => {
+    const lab = e.target.closest(".p.removable");
+    if (lab && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      removeFrom(P.indexOf(Number(lab.textContent)));
+    }
+  });
+
+  // ---------- ratio ⇄ vector ----------
+  const bgcd = (a, b) => { while (b) { [a, b] = [b, a % b]; } return a; };
+
+  function vectorToRatio(exps) {
+    let n = 1n, d = 1n;
+    for (const p of P) {
+      const e = exps[p] | 0;
+      if (e > 0) n *= BigInt(p) ** BigInt(e);
+      else if (e < 0) d *= BigInt(p) ** BigInt(-e);
+    }
+    while (n >= d * 2n) d *= 2n;   // octave-reduce into [1, 2)
+    while (n < d) n *= 2n;
+    const g = bgcd(n, d);
+    return [n / g, d / g];
+  }
+
+  function factorRatio(n, d) {
+    const g = bgcd(n, d);
+    n /= g; d /= g;
+    while (n % 2n === 0n) n /= 2n;   // octave-equivalent: 2s are not notated
+    while (d % 2n === 0n) d /= 2n;
+    const exps = {};
+    for (const p of P) {
+      const bp = BigInt(p);
+      let e = 0;
+      while (n % bp === 0n) { n /= bp; e++; }
+      while (d % bp === 0n) { d /= bp; e--; }
+      exps[p] = e;
+    }
+    return { exps, rn: n, rd: d };
+  }
+
+  let residue = { n: 1, d: 1 };
+
+  function readExps() {
+    const exps = {};
+    let bad = false;
+    for (const p of P) {
+      const raw = expInputs[p].value.trim();
+      const v = raw === "" || raw === "-" ? 0 : Number(raw);
+      if (!Number.isFinite(v) || !Number.isInteger(v)) bad = true;
+      exps[p] = Number.isFinite(v) ? v : 0;
+      expInputs[p].classList.toggle("nonzero", exps[p] !== 0);
+    }
+    return { exps, bad };
+  }
+
+  function onVectorInput() {
+    const { exps, bad } = readExps();
+    residue = { n: 1, d: 1 };
+    if (!bad) {
+      const [n, d] = vectorToRatio(exps);
+      $("num").value = String(n);
+      $("den").value = String(d);
+    }
+    render();
+  }
+
+  function onRatioInput() {
+    const ns = $("num").value.trim(), ds = $("den").value.trim();
+    if (!/^\d+$/.test(ns) || !/^\d+$/.test(ds) || ds === "0" || ns === "0") {
+      render();
+      return;
+    }
+    const { exps, rn, rd } = factorRatio(BigInt(ns), BigInt(ds));
+    for (const p of P) expInputs[p].value = String(exps[p]);
+    let maxIdx = -1;
+    P.forEach((p, i) => { if (exps[p] !== 0) maxIdx = i; });
+    if (rn > 1n || rd > 1n) setVisible(P.length);
+    else setVisible(maxIdx >= 0 ? maxIdx + 1 : DEFAULT_VISIBLE);
+    residue = { n: Number(rn), d: Number(rd) };
+    readExps();
+    render();
+  }
+
+  // ---------- tonic combo box ----------
+  const NOMINALS = [];
+  for (let i = 0; i < D.fifthsString.length; i += 3) {
+    NOMINALS.push(D.fifthsString.slice(i, i + 3).trim());
+  }
+  const spellNominal = (name) => {
+    const letter = name.slice(-1);
+    const glyph = ACC_GLYPH[name.slice(0, -1)] || "";
+    return (glyph ? '<span class="acc">' + glyph + "</span>" : "") + letter;
+  };
+  let nominal = "D";
+  const comboBtn = $("nominal-btn");
+  const comboList = $("nominal-list");
+  const comboVal = comboBtn.querySelector(".combo-val");
+  let activeIdx = NOMINALS.indexOf(nominal);
+
+  NOMINALS.forEach((nm, i) => {
+    const li = document.createElement("li");
+    li.setAttribute("role", "option");
+    li.dataset.value = nm;
+    li.id = "nominal-opt-" + i;
+    li.innerHTML = spellNominal(nm);
+    comboList.appendChild(li);
+  });
+
+  // Size the popup to a whole number of rows — border-box means its padding and
+  // borders have to be added back, or the last row is left sliced.
+  function sizeComboList() {
+    const rowH = comboList.firstElementChild.getBoundingClientRect().height;
+    if (!rowH) return;
+    const cs = getComputedStyle(comboList);
+    const chrome = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)
+      + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+    const rows = Math.max(1, Math.floor((280 - chrome) / rowH));
+    comboList.style.maxHeight = (rows * rowH + chrome) + "px";
+  }
+
+  function paintCombo() {
+    comboVal.innerHTML = spellNominal(nominal);
+    [...comboList.children].forEach((li, i) => {
+      li.setAttribute("aria-selected", li.dataset.value === nominal ? "true" : "false");
+      li.classList.toggle("active", i === activeIdx);
+    });
+  }
+  function openCombo(open) {
+    comboList.hidden = !open;
+    comboBtn.setAttribute("aria-expanded", String(open));
+    if (open) {
+      sizeComboList();
+      activeIdx = NOMINALS.indexOf(nominal);
+      paintCombo();
+      comboList.children[activeIdx].scrollIntoView({ block: "nearest" });
+    }
+  }
+  function chooseNominal(nm) {
+    nominal = nm;
+    activeIdx = NOMINALS.indexOf(nm);
+    paintCombo();
+    openCombo(false);
+    render();
+  }
+  comboBtn.addEventListener("click", () => openCombo(comboList.hidden));
+  comboList.addEventListener("click", (e) => {
+    const li = e.target.closest("li");
+    if (li) chooseNominal(li.dataset.value);
+  });
+  comboBtn.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (comboList.hidden) { openCombo(true); return; }
+      activeIdx = Math.max(0, Math.min(NOMINALS.length - 1,
+        activeIdx + (e.key === "ArrowDown" ? 1 : -1)));
+      paintCombo();
+      comboList.children[activeIdx].scrollIntoView({ block: "nearest" });
+    } else if (e.key === "Enter" && !comboList.hidden) {
+      e.preventDefault();
+      chooseNominal(NOMINALS[activeIdx]);
+    } else if (e.key === "Escape") {
+      openCombo(false);
+    }
+  });
+  document.addEventListener("click", (e) => {
+    if (!comboList.hidden && !e.target.closest("#nominal-combo")) openCombo(false);
+  });
+
+  const fmt3 = (v) => (typeof v === "number" ? v.toFixed(3) : "");
+  const fmtInt = (v) => (typeof v === "number" ? String(v) : "");
+  const diacritics = (d) => (d === "none" ? "no diacritics" : d);
+  const codepoints = (s) => [...s].filter((c) => c !== " ")
+    .map((c) => "U+" + c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0"))
+    .join(" ");
+
+  // ---------- column model ----------
+  const GROUPS = [
+    { key: "unicode", name: "Unicode", variants: true, cls: "uni",
+      tip: "The SMuFL codepoints of the symbols, for pasting into anything that "
+        + "understands them.",
+      value: (row, lv, v) => codepoints(lv[v + "Unicode"]) },
+    { key: "ascii", name: "ASCII", variants: true, cls: "mono",
+      tip: "Sagittal's plain-text shorthand, as used on the forum and in Scala.",
+      value: (row, lv, v) => lv[v + "Ascii"] },
+    { key: "bravura", name: "Bravura", variants: true, cls: "brav",
+      tip: "The symbols themselves, drawn in Bravura — the Sagittal-corrected build "
+        + "of it is embedded in this page, so nothing needs installing.",
+      value: (row, lv, v) => lv[v + "Unicode"] },
+    { key: "fifths", name: "Fifths Count", variants: false, cls: "num",
+      tip: "How many fifths along the chain of fifths this nominal sits from your "
+        + "tonic — a rough measure of how far afield the spelling is.",
+      value: (row) => fmtInt(row.fifthsCount) },
+    { key: "representing", name: "Representing (¢)", variants: false, cls: "num dim",
+      tip: REPRESENT_TIP,
+      value: (row) => (row.alteration === 0 || row.alteration === ""
+        ? "" : fmt3(row.alteration)) },
+    { key: "error", name: "Error (¢)", variants: false, cls: "num dim",
+      tip: "How far this level's nearest symbol lands from the alteration the row "
+        + "actually needs. Zero means the symbol's own comma is exactly your pitch.",
+      value: (row, lv) => fmt3(lv.error) },
+  ];
+  const collapsed = new Set();
+  const show = { evo: true, revo: true };
+  const variantsOn = () => ["evo", "revo"].filter((v) => show[v]);
+
+  const collapseHint = (g) =>
+    collapsed.has(g.key) ? "Click to show this column again." : "Click to collapse it.";
+
+  // The column set never changes when a group collapses — collapsing is a CSS
+  // state, so the widths can animate instead of the table being rebuilt.
+  function columns() {
+    const cols = [];
+    for (const g of GROUPS) {
+      if (!g.variants) { cols.push({ g, variant: null, only: true }); continue; }
+      const vs = variantsOn();
+      vs.forEach((v, i) => cols.push({ g, variant: v, first: i === 0, span: vs.length }));
+    }
+    return cols;
+  }
+
+  // ---------- copy-on-hover ----------
+  function copyText(t) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(t).catch(() => fallbackCopy(t));
+    }
+    return fallbackCopy(t);
+  }
+  function fallbackCopy(t) {
+    const ta = document.createElement("textarea");
+    ta.value = t;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch (err) { /* nothing else to try */ }
+    document.body.removeChild(ta);
+    return Promise.resolve();
+  }
+  function cell(text, cls, groupStart) {
+    const el = document.createElement("td");
+    const v = document.createElement("span");
+    v.className = "cw cv";
+    v.textContent = text;
+    el.appendChild(v);
+    if (groupStart) {                      // the dash that stands in when collapsed
+      const d = document.createElement("span");
+      d.className = "cd";
+      d.textContent = "-";
+      el.appendChild(d);
+    }
+    if (String(text).trim() === "") {      // nothing to show, and nothing to copy
+      v.textContent = "-";
+      v.className = "cw cv ph";
+      el.className = cls || "";
+      return el;
+    }
+    el.className = "cp " + (cls || "");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "copy";
+    b.title = "Copy";
+    b.setAttribute("aria-label", "Copy " + text);
+    b.innerHTML = COPY_ICON;
+    b.addEventListener("click", () => {
+      copyText(v.textContent).then(() => {
+        b.innerHTML = DONE_ICON;
+        b.classList.add("done");
+        setTimeout(() => { b.innerHTML = COPY_ICON; b.classList.remove("done"); }, 1100);
+      });
+    });
+    el.appendChild(b);
+    return el;
+  }
+
+  // ---------- level cards ----------
+  const levelsRoot = $("levels");
+  const levelParts = {};
+  for (const m of D.levels) {
+    const det = document.createElement("details");
+    det.className = "level";
+    det.dataset.level = m.level;
+    if (m.level === "medium") det.open = true;
+
+    const name = m.label.replace(/\*+$/, "");
+    const sum = document.createElement("summary");
+    sum.innerHTML =
+      '<span class="chev">' + CHEV + "</span>"
+      + '<span class="lv-head"><span class="lv-title">'
+      + '<span class="lv-name tip" tabindex="0" data-tip="' + esc(LEVEL_TIPS[m.level])
+      + '">' + name + "</span>"
+      + '<span class="lv-kind">Precision Level</span></span>'
+      + '<span class="lv-meta">maximum symbol set <b>' + m.symbolSet + "</b> · <b>"
+      + m.limit + "</b>-limit · "
+      + '<span class="tip" tabindex="0" data-tip="' + esc(resolutionTip(m))
+      + '">resolution ≈ <b>' + m.resolution + "¢</b></span> · includes <b>"
+      + diacritics(m.diacritics) + "</b></span></span>"
+      + '<span class="lv-preview" aria-hidden="true"></span>';
+
+    const wrap = document.createElement("div");
+    wrap.className = "tbl-wrap";
+    const table = document.createElement("table");
+    wrap.appendChild(table);
+    det.appendChild(sum);
+    det.appendChild(wrap);
+    det.addEventListener("toggle", () => {
+      if (det.open) measureWidths(table);   // a closed card has no layout to measure
+    });
+    levelsRoot.appendChild(det);
+    levelParts[m.level] = { table, preview: sum.querySelector(".lv-preview") };
+  }
+
+  levelsRoot.addEventListener("click", (e) => {
+    if (e.target.closest("summary") && e.target.closest(".tip")) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
+
+  function buildHead(cols) {
+    const thead = document.createElement("thead");
+    const needSub = variantsOn().length > 1;
+    const top = document.createElement("tr");
+    let i = 0;
+    while (i < cols.length) {
+      const c = cols[i];
+      const span = c.variant ? c.span : 1;
+      const th = document.createElement("th");
+      const classes = ["grouphead", "gh-" + c.g.key];
+      if (i > 0) classes.push("grp");
+      // variant groups stay on the top row either way, so the label never moves
+      if (needSub && !c.g.variants) th.rowSpan = 2;
+      else if (needSub) classes.push("underline");
+      if (span > 1) th.colSpan = span;
+      th.className = classes.join(" ");
+      th.innerHTML = '<span class="tog" aria-hidden="true"></span>'
+        + '<span class="tip" tabindex="0" data-tip="'
+        + esc(c.g.tip + " " + collapseHint(c.g)) + '">' + c.g.name + "</span>";
+      th.addEventListener("click", () => toggleGroup(c.g));
+      top.appendChild(th);
+      i += span;
+    }
+    thead.appendChild(top);
+    if (needSub) {
+      const sub = document.createElement("tr");
+      sub.className = "subhead";
+      cols.forEach((c, idx) => {
+        if (!c.g.variants) return;              // those span both rows
+        const th = document.createElement("th");
+        th.className = "g-" + c.g.key + (idx > 0 && c.first ? " grp" : "");
+        const w = document.createElement("span");
+        w.className = "cw";
+        w.textContent = c.variant === "evo" ? "Evo" : "Revo";
+        th.appendChild(w);
+        sub.appendChild(th);
+      });
+      thead.appendChild(sub);
+    }
+    return thead;
+  }
+
+  // Collapsing is a class flip, so the widths animate; only the +/− needs redrawing.
+  function paintToggles() {
+    for (const g of GROUPS) {
+      const open = !collapsed.has(g.key);
+      levelsRoot.querySelectorAll("th.gh-" + g.key).forEach((th) => {
+        th.querySelector(".tog").textContent = open ? "−" : "+";
+        th.querySelector(".tip").dataset.tip = g.tip + " " + collapseHint(g);
+      });
+    }
+  }
+  function toggleGroup(g) {
+    if (collapsed.has(g.key)) collapsed.delete(g.key);
+    else collapsed.add(g.key);
+    levelsRoot.classList.toggle("cx-" + g.key, collapsed.has(g.key));
+    paintToggles();
+  }
+
+  // Each shrinkable span needs its natural width pinned so the transition has
+  // somewhere to travel from; only laid-out (open) tables can be measured.
+  function measureWidths(table) {
+    const spans = table.querySelectorAll(".cw, .cd");
+    if (!spans.length || !table.offsetParent) return;
+    table.classList.add("measuring");
+    spans.forEach((s) => { s.style.maxWidth = "none"; });
+    const widths = [...spans].map((s) => s.getBoundingClientRect().width);
+    spans.forEach((s, i) => {
+      s.style.maxWidth = "";
+      s.style.setProperty("--w", Math.ceil(widths[i]) + "px");
+    });
+    void table.offsetHeight;
+    table.classList.remove("measuring");
+  }
+
+  // The simplest offer: fewest sharps/flats, then the smallest alteration.
+  const accidentals = (sf) => (sf === "" ? 0 : (sf.length > 1 ? 2 : 1));
+  function simplestRow(rows) {
+    return rows.reduce((best, r) => {
+      if (!best) return r;
+      const a = accidentals(r.sharpFlat), b = accidentals(best.sharpFlat);
+      if (a !== b) return a < b ? r : best;
+      return Math.abs(r.alteration) < Math.abs(best.alteration) ? r : best;
+    }, null);
+  }
+
+  function render() {
+    const { exps, bad } = readExps();
+    const ns = $("num").value.trim(), ds = $("den").value.trim();
+    let problem = null;
+    if (bad) problem = "Exponents must be whole numbers.";
+    else if (!/^\d+$/.test(ns) || !/^\d+$/.test(ds)) problem = "The ratio must be two whole numbers.";
+    else if (ns === "0" || ds === "0") problem = "The ratio's terms must be greater than zero.";
+    else if (!Number.isSafeInteger(residue.n) || !Number.isSafeInteger(residue.d))
+      problem = "That ratio is too large to factor exactly.";
+
+    const res = problem ? { error: problem }
+      : SAG.compute({ exps, num: residue.n, den: residue.d, nominal });
+
+    const err = $("error-msg");
+    const showErr = Boolean(res.error);
+    err.hidden = !showErr;
+    levelsRoot.style.display = showErr ? "none" : "";
+    if (showErr) {
+      err.textContent = res.error;
+      $("cents11").textContent = "—";
+      return;
+    }
+
+    $("cents11").textContent = fmt3(res.centsAbove11);
+
+    const rows = res.rows.filter((r) => r.letter !== "");
+    const cols = columns();
+    const simplest = simplestRow(rows);
+
+    DG.marks = rows.map((r) => r.alteration)
+      .filter((a) => typeof a === "number" && a !== 0);
+    if (DG.card.open) drawDiagram();
+
+    for (const m of D.levels) {
+      const part = levelParts[m.level];
+      const both = variantsOn().length > 1;
+      part.preview.innerHTML = simplest
+        ? variantsOn().map((v) => '<span class="pv">'
+          + (both ? '<span class="pv-lab">' + (v === "evo" ? "Evo" : "Revo") + "</span>" : "")
+          + '<span class="pv-gl">'
+          + esc(simplest.levels[m.level][v + "Unicode"]) + "</span></span>").join("")
+        : "";
+
+      part.table.textContent = "";
+      part.table.appendChild(buildHead(cols));
+      const tbody = document.createElement("tbody");
+      for (const row of rows) {
+        const lv = row.levels[m.level];
+        const tr = document.createElement("tr");
+        tr.className = lv.error === 0 ? "exact" : "approx";
+        cols.forEach((c, idx) => {
+          const groupStart = Boolean(c.only || c.first);
+          tr.appendChild(cell(c.g.value(row, lv, c.variant),
+            c.g.cls + " g-" + c.g.key + (idx > 0 && groupStart ? " grp" : ""),
+            groupStart));
+        });
+        tbody.appendChild(tr);
+      }
+      part.table.appendChild(tbody);
+      measureWidths(part.table);
+    }
+    paintToggles();
+  }
+
+
+  // ---------- precision levels diagram ----------
+  // Drawn live from the same boundary/comma/key tables the calculator itself
+  // uses, so what you see is exactly what it would offer you.
+  const DG = {
+    scroll: $("dg-scroll"),
+    zoom: $("dg-zoom"),
+    zoomVal: $("dg-zoom-val"),
+    readout: $("dg-readout"),
+    card: $("diagram-card"),
+    band: 74,
+    padL: 62,
+    padT: 26,
+    marks: [],
+  };
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const svgEl = (name, attrs, text) => {
+    const el = document.createElementNS(SVGNS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (text !== undefined) el.textContent = text;
+    return el;
+  };
+  const DG_MAX_CENTS = SAG.CENTS_MAX;
+
+  function zoneFor(level, cents) {
+    const rows = D.bounds[level];
+    let lo = 0;
+    for (let i = 0; i < rows.length; i++) if (rows[i][0] <= cents) lo = i;
+    return lo;
+  }
+
+  function drawDiagram() {
+    const pxPerCent = Number(DG.zoom.value);
+    DG.zoomVal.textContent = pxPerCent + " px/¢";
+    const width = DG.padL + DG_MAX_CENTS * pxPerCent + 24;
+    const height = DG.padT + D.levels.length * DG.band + 8;
+    const svg = svgEl("svg", {
+      width: Math.round(width), height,
+      viewBox: `0 0 ${Math.round(width)} ${height}`,
+      role: "img",
+      "aria-label": "Sagittal symbols at each precision level, by alteration size",
+    });
+    const x = (c) => DG.padL + c * pxPerCent;
+
+    // cents ruler
+    const tickStep = pxPerCent >= 90 ? 1 : pxPerCent >= 40 ? 2 : 5;
+    for (let c = 0; c <= DG_MAX_CENTS; c += tickStep) {
+      svg.appendChild(svgEl("line", { class: "dg-tick-line", x1: x(c), x2: x(c),
+        y1: DG.padT - 6, y2: height - 8 }));
+      svg.appendChild(svgEl("text", { class: "dg-tick", x: x(c), y: DG.padT - 10 },
+        c + "¢"));
+    }
+
+    D.levels.forEach((m, i) => {
+      const top = DG.padT + i * DG.band;
+      const mid = top + DG.band / 2;
+      const rows = D.bounds[m.level];
+      svg.appendChild(svgEl("rect", { class: "dg-band", x: DG.padL, y: top + 6,
+        width: DG_MAX_CENTS * pxPerCent, height: DG.band - 14, rx: 4 }));
+      svg.appendChild(svgEl("text", { class: "dg-level", x: 8, y: mid + 3 },
+        m.label.replace(/\*+$/, "")));
+
+      // the zone holding the current pitch, per level
+      const hot = new Set(DG.marks.map((c) => zoneFor(m.level, Math.abs(c))));
+
+      rows.forEach(([lower, key], idx) => {
+        const upper = idx + 1 < rows.length ? rows[idx + 1][0] : DG_MAX_CENTS;
+        if (hot.has(idx)) {
+          svg.appendChild(svgEl("rect", { class: "dg-zone on", x: x(Math.max(lower, 0)),
+            y: top + 6, width: Math.max(0, x(upper) - x(Math.max(lower, 0))),
+            height: DG.band - 14, rx: 3 }));
+        }
+        if (lower > 0) {
+          svg.appendChild(svgEl("line", { class: "dg-bound", x1: x(lower), x2: x(lower),
+            y1: top + 6, y2: top + DG.band - 8 }));
+        }
+        const comma = D.commas[key];
+        if (!comma) return;                       // key 0: the unaltered zone
+        const cx = x(comma.cents);
+        const glyph = (D.key[key] || ["", "", "", ""])[show.evo ? 2 : 3];
+        svg.appendChild(svgEl("circle", { class: "dg-dot", cx, cy: mid - 16, r: 1.8 }));
+        const sym = svgEl("text", {
+          class: "dg-sym" + (hot.has(idx) ? " on" : ""),
+          x: cx, y: mid + 12, "font-size": "26px",
+        }, glyph);
+        svg.appendChild(sym);
+        const hit = svgEl("rect", { class: "dg-hit", x: cx - 9, y: top + 6,
+          width: 18, height: DG.band - 14 });
+        const label = `<b>${comma.name}</b> · ${comma.num}/${comma.den} · `
+          + `${comma.cents.toFixed(3)}¢ · ${m.label.replace(/\*+$/, "")} and finer`;
+        hit.addEventListener("mouseenter", () => { DG.readout.innerHTML = label; });
+        hit.addEventListener("focus", () => { DG.readout.innerHTML = label; });
+        hit.setAttribute("tabindex", "0");
+        svg.insertBefore(hit, sym);
+      });
+    });
+
+    // the alterations the current pitch actually needs
+    DG.marks.forEach((cents) => {
+      const cx = x(Math.abs(cents));
+      svg.appendChild(svgEl("line", { class: "dg-mark", x1: cx, x2: cx,
+        y1: DG.padT - 4, y2: height - 8 }));
+      svg.appendChild(svgEl("text", { class: "dg-mark-lab", x: cx + 4, y: DG.padT + 8 },
+        (cents > 0 ? "+" : "−") + Math.abs(cents).toFixed(3) + "¢"));
+    });
+
+    DG.scroll.textContent = "";
+    DG.scroll.appendChild(svg);
+  }
+
+  DG.zoom.addEventListener("input", drawDiagram);
+  DG.card.addEventListener("toggle", () => { if (DG.card.open) drawDiagram(); });
+
+  // ---------- wiring ----------
+  for (const p of P) expInputs[p].addEventListener("input", onVectorInput);
+  $("num").addEventListener("input", onRatioInput);
+  $("den").addEventListener("input", onRatioInput);
+  $("add-prime").addEventListener("click", () => setVisible(visible + 1));
+  function paintLocks() {
+    $("show-evo").classList.toggle("locked", show.evo && !show.revo);
+    $("show-revo").classList.toggle("locked", show.revo && !show.evo);
+  }
+
+  for (const [id, key] of [["show-evo", "evo"], ["show-revo", "revo"]]) {
+    // not disabled — a greyed box reads as broken; the last one simply refuses
+    $(id).addEventListener("change", () => {
+      show[key] = $(id).checked;
+      if (!show.evo && !show.revo) { show[key] = true; $(id).checked = true; }
+      paintLocks();
+      render();
+    });
+  }
+  $("reset").addEventListener("click", () => {
+    for (const p of P) expInputs[p].value = "0";
+    $("num").value = "1";
+    $("den").value = "1";
+    nominal = "D";
+    paintCombo();
+    residue = { n: 1, d: 1 };
+    setVisible(DEFAULT_VISIBLE);
+    render();
+  });
+
+  paintCombo();
+  paintLocks();
+  setVisible(DEFAULT_VISIBLE);
+  render();
+
+  // the music font changes every row height, so re-measure once it has landed
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      sizeComboList();
+      for (const m of D.levels) measureWidths(levelParts[m.level].table);
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
