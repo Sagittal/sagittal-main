@@ -40,7 +40,7 @@ glyphs match the rest of this repo, mina diacritics included.
 ## Specs
 
     node tools/coreSpec.mjs               # the maths, against the workbook itself
-    python tools/runInteractionSpec.py    # the UI, in headless Edge
+    python tools/runInteractionSpec.py    # the UI, in headless Edge or Chrome
 
 `coreSpec.mjs` checks every UI output cell for 59 input vectors against values
 recalculated from the workbook's own formulas (`tools/oracle.py` produces
