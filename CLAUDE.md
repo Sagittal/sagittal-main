@@ -16,18 +16,25 @@ the old one. `git status` then shows
 which reads like a stray edit but means the folder has moved past what is recorded for it. Finish with:
 
 ```shell
-git -C app push          # push the submodule first
-git add app              # then record it here
+git -C app fetch origin
+git -C app checkout --detach origin/main   # the commit that landed — see below
+git add app
 git commit -m "Point at the app submodule's current commit"
 git push
 ```
 
-**Only ever record a commit you have already pushed.** Recording a local-only commit is how `/app` came to point at
-`faf0ed23` for years — a commit amended away before it was ever pushed, so it existed nowhere and GitHub 404'd it.
+**Only ever record a commit that is on the submodule's `origin/main`.** Recording one that exists only locally is how
+`/app` came to point at `faf0ed23` for years — a commit amended away before it was ever pushed, so it existed nowhere
+and GitHub 404'd it. That trap is now routine rather than rare: `app` lands through a merge queue that *rebases*, so
+once your PR merges, the SHA your branch still holds is not the SHA that landed. Read it off `origin/main`, never off
+your own HEAD.
 
-**When several agents are pushing to the same submodule at once, leave this until they have all landed.** The number
-goes stale again with the next push, so bumping it mid-flight just produces churn — and a bump that lands while
-another agent is mid-push can record a commit that is about to be rewritten.
+Do that in your own worktree. The primary checkout's submodule folders are shared and often hold another agent's
+uncommitted edits, and recording a pointer is never worth moving those aside for.
+
+**Record it on every merge, even with other agents mid-flight.** The number goes stale again with the next merge —
+but there is nearly always another PR open, so holding out for a quiet moment means never doing it at all, and a
+pointer months behind is worse than one an hour behind. Bump it; the next agent bumps it again.
 
 ## Working alongside other agents
 
