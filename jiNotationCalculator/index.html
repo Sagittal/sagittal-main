@@ -167,11 +167,12 @@
   /* the pitch's size, sitting above the vector rather than spelled out */
   .vec-block { display: flex; flex-direction: column; flex: none; }
   .cents-block { display: flex; flex-direction: column; padding-bottom: 21px; }
+  .cents-block .field-label { margin-bottom: 4px; }
   .cents {
     margin: 0;
     font-size: 15px;
     font-variant-numeric: tabular-nums;
-    color: var(--ink);
+    color: var(--muted);
     white-space: nowrap;
     padding: 6px 0;
   }
@@ -284,19 +285,48 @@
   .combo-list li[aria-selected="true"] { background: var(--line-soft); font-weight: 600; }
   .combo-list li.active { background: var(--accent-soft); }
 
-  .checks { display: flex; gap: 16px; padding-top: 6px; }
+  .checks { display: flex; flex-direction: column; gap: 7px; padding-top: 6px; }
   .checks label { display: inline-flex; align-items: center; gap: 6px; font-size: 14px;
                   color: var(--muted); cursor: pointer; }
-  .checks input { width: auto; accent-color: var(--ink); cursor: pointer; }
+  /* drawn from scratch: the native control paints its own tick, and no
+     accent-color setting stops that tick coming out white */
+  .checks input {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--muted);
+    border-radius: 3px;
+    background: var(--input-bg);
+    cursor: pointer;
+  }
+  .checks input:checked { background: var(--ink); border-color: var(--ink); }
+  .checks input::after {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--card);
+    border-width: 0 2px 2px 0;
+    transform: rotate(42deg);
+    opacity: 0;
+  }
+  .checks input:checked::after { opacity: 1; }
+  .checks label:hover input:not(.locked) { border-color: var(--ink); }
   /* the last one checked cannot be switched off, and should look it */
   .checks input.locked {
-    accent-color: var(--line);
+    background: var(--line);
+    border-color: var(--line);
     cursor: default;
     pointer-events: none;
-    filter: grayscale(1);
   }
+  .checks input.locked::after { border-color: var(--ink); }
   .checks label:has(input.locked) { cursor: default; }
-  .checks label:has(input.locked):hover span { color: var(--muted); }
 
   .reset-wrap { position: absolute; right: 24px; bottom: 20px; }
   button.reset {
@@ -342,6 +372,7 @@
     visibility: hidden;
     z-index: 30;
   }
+  .tip.tip-up::after { top: auto; bottom: calc(100% + 9px); }
   .tip:hover::after, .tip:focus-visible::after,
   button.add-prime:hover::after, button.add-prime:focus-visible::after {
     opacity: 1;
@@ -354,12 +385,12 @@
   /* ---------- precision levels ---------- */
   #levels { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
   .section-head {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin: 30px 2px 0;
+    font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    margin: 34px 2px 12px;
   }
   #diagram-card { margin-top: 12px; }
   .level { border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
@@ -396,7 +427,8 @@
     padding-left: 16px;
   }
   .pv { display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; }
-  .lv-preview .pv { min-width: var(--pv-w, auto); }
+  .lv-preview .pv-lab { min-width: 34px; text-align: right; }
+  .lv-preview .pv-gl { min-width: 58px; text-align: left; }
   .pv-lab { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .pv-gl {
     font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
@@ -419,6 +451,7 @@
   }
   .diagram-controls input[type=range] { width: 190px; accent-color: var(--ink); }
   .diagram-scroll { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+  .diagram-scroll.fits { overflow-x: hidden; }
   .diagram-scroll svg { display: block; }
   .dg-band { fill: var(--raise); }
   .dg-rule { stroke: var(--line); stroke-width: 1; }
@@ -472,10 +505,11 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--thead);
-    padding: 9px 6px 7px;
+    padding: 9px 5px 7px;
     vertical-align: bottom;
   }
-  th.grouphead { cursor: pointer; user-select: none; white-space: nowrap; }
+  th.grouphead { cursor: pointer; user-select: none; }
+  th.grouphead .tip { display: inline; }
   th.grouphead:hover { color: var(--accent); }
   .tog {
     display: inline-flex;
@@ -503,7 +537,7 @@
   thead tr.subhead th { padding-top: 4px; padding-bottom: 8px; font-weight: 600; }
   thead { border-bottom: 1px solid var(--line); }
   td {
-    padding: 8px 6px;
+    padding: 8px 5px;
     border-bottom: 1px solid var(--line-soft);
     vertical-align: middle;
     white-space: nowrap;
@@ -512,24 +546,34 @@
   td.grp, th.grp { border-left: 1px solid var(--line-soft); }
   td.brav {
     font-family: "SagittalGlyphs", "Bravura Text", Bravura, sans-serif;
-    font-size: 57px;
+    font-size: 50px;
     line-height: 1;
-    color: var(--glyph);
     padding-top: 2px;
     padding-bottom: 2px;
   }
   td.uni {
     font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
-    font-size: 12px;
-    color: var(--muted);
+    font-size: 11px;
+    white-space: normal;
+    word-break: break-all;
+  }
+  td.unichars {
+    font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+    font-size: 14px;
   }
   td.num { font-variant-numeric: tabular-nums; }
   td.dim { color: var(--muted); }
   tbody tr td { color: var(--muted); }
   tbody tr.best td { color: var(--ink); }
+  tbody tr.best td.brav { color: var(--glyph); }
   th.rowtog, td.rowtog { width: 1%; padding-left: 10px; padding-right: 2px; text-align: center; }
-  td.rowtog { cursor: pointer; user-select: none; color: var(--muted); }
-  td.rowtog:hover { color: var(--accent); }
+  td.rowtog { cursor: pointer; user-select: none; }
+  td.rowtog .tog { margin-right: 0; }
+  td.rowtog:hover .tog {
+    color: var(--card);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
   tbody tr.rowoff td { padding-top: 2px; padding-bottom: 2px; }
   tbody tr.rowoff td.brav { font-size: 13px; }
   tbody tr.rowoff .cw { max-width: 0; opacity: 0; }
@@ -596,25 +640,29 @@
 
   /* one block per collapsible group */
   #levels.cx-unicode .g-unicode .cw,
-  #levels.cx-ascii .g-ascii .cw,
+  #levels.cx-sagitype .g-sagitype .cw,
+  #levels.cx-unichars .g-unichars .cw,
   #levels.cx-bravura .g-bravura .cw,
   #levels.cx-fifths .g-fifths .cw,
   #levels.cx-representing .g-representing .cw,
   #levels.cx-error .g-error .cw { max-width: 0; opacity: 0; }
   #levels.cx-unicode .g-unicode.dash-lead .cd,
-  #levels.cx-ascii .g-ascii.dash-lead .cd,
+  #levels.cx-sagitype .g-sagitype.dash-lead .cd,
+  #levels.cx-unichars .g-unichars.dash-lead .cd,
   #levels.cx-bravura .g-bravura.dash-lead .cd,
   #levels.cx-fifths .g-fifths.dash-lead .cd,
   #levels.cx-representing .g-representing.dash-lead .cd,
   #levels.cx-error .g-error.dash-lead .cd { max-width: var(--w, 1em); opacity: 1; }
   #levels.cx-unicode td.g-unicode,
-  #levels.cx-ascii td.g-ascii,
+  #levels.cx-sagitype td.g-sagitype,
+  #levels.cx-unichars td.g-unichars,
   #levels.cx-bravura td.g-bravura,
   #levels.cx-fifths td.g-fifths,
   #levels.cx-representing td.g-representing,
   #levels.cx-error td.g-error { padding-left: 10px; padding-right: 10px; }
   #levels.cx-unicode .g-unicode .copy,
-  #levels.cx-ascii .g-ascii .copy,
+  #levels.cx-sagitype .g-sagitype .copy,
+  #levels.cx-unichars .g-unichars .copy,
   #levels.cx-bravura .g-bravura .copy,
   #levels.cx-fifths .g-fifths .copy,
   #levels.cx-representing .g-representing .copy,
@@ -1014,6 +1062,7 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
       expCells[p][0].classList.toggle("removable", removable);
       expCells[p][0].tabIndex = removable ? 0 : -1;
       expCells[p][0].classList.toggle("tip", removable);
+      expCells[p][0].classList.toggle("tip-up", removable);
       if (removable) {
         expCells[p][0].dataset.tip = "Remove prime " + p
           + (i < visible - 1 ? " and every prime above it." : ".");
@@ -1244,25 +1293,29 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
       tip: "The symbols themselves, drawn in Bravura — the Sagittal-corrected build "
         + "of it is embedded in this page, so nothing needs installing.",
       value: (row, lv, v) => lv[v + "Unicode"] },
-    { key: "ascii", name: "ASCII", variants: true, cls: "mono",
-      tip: "Sagittal's plain-text shorthand, as used on the forum and in Scala.",
+    { key: "sagitype", name: "Sagitype", variants: true, cls: "mono",
+      tip: "Sagittal's plain-text shorthand — its own name for it is Sagitype — as "
+        + "used on the forum and in Scala.",
       value: (row, lv, v) => lv[v + "Ascii"] },
-    { key: "unicode", name: "Unicode", variants: true, cls: "uni",
-      tip: "The SMuFL codepoints of the symbols, for pasting into anything that "
-        + "understands them.",
+    { key: "unichars", name: "Unicode", variants: true, cls: "unichars",
+      tip: "The characters themselves. They will show as boxes in anything without "
+        + "a SMuFL font, but they paste through intact.",
+      value: (row, lv, v) => lv[v + "Unicode"] },
+    { key: "unicode", name: "Codepoints", variants: true, cls: "uni",
+      tip: "The SMuFL codepoints of those characters, written out.",
       value: (row, lv, v) => codepoints(lv[v + "Unicode"]) },
-    { key: "fifths", name: "Fifths Count", variants: false, cls: "num",
+    { key: "fifths", name: "Fifths<br>Count", variants: false, cls: "num",
       tip: "How many fifths along the chain of fifths this nominal sits from your "
         + "tonic — a rough measure of how far afield the spelling is.",
       value: (row) => fmtInt(row.fifthsCount) },
-    { key: "representing", name: "Representing (¢)", variants: false, cls: "num dim",
+    { key: "representing", name: "Cents", variants: false, cls: "num dim",
       tip: REPRESENT_TIP,
       value: (row) => (row.alteration === 0 || row.alteration === ""
-        ? "" : fmt3(row.alteration)) },
-    { key: "error", name: "Error (¢)", variants: false, cls: "num dim",
+        ? "" : fmt3(row.alteration) + "¢") },
+    { key: "error", name: "Error", variants: false, cls: "num dim",
       tip: "How far this level's nearest symbol lands from the alteration the row "
         + "actually needs. Zero means the symbol's own comma is exactly your pitch.",
-      value: (row, lv) => fmt3(lv.error) },
+      value: (row, lv) => fmt3(lv.error) + "¢" },
   ];
   const collapsed = new Set();
   const show = { evo: true, revo: true };
@@ -1531,11 +1584,10 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
         if (row === best) tr.classList.add("best");
         const tog = document.createElement("td");
         tog.className = "rowtog";
-        tog.textContent = "−";
-        tog.title = "";
+        tog.innerHTML = '<span class="tog" aria-hidden="true">−</span>';
         tog.addEventListener("click", () => {
           const off = tr.classList.toggle("rowoff");
-          tog.textContent = off ? "+" : "−";
+          tog.querySelector(".tog").textContent = off ? "+" : "−";
         });
         tr.appendChild(tog);
         cols.forEach((c, idx) => {
@@ -1587,8 +1639,9 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
     const pxPerCent = Number(DG.zoom.value);
     DG.zoomVal.textContent = pxPerCent + " px/¢";
     const width = DG.padL + DG_MAX_CENTS * pxPerCent + 24;
-    const openCount = D.levels.filter((m) => levelParts[m.level].card.open).length;
-    const height = DG.padT + Math.max(1, openCount) * DG.band + 8;
+    const open = D.levels.filter((m) => levelParts[m.level].card.open);
+    const shown = open.length ? open : D.levels;
+    const height = DG.padT + shown.length * DG.band + 8;
     const svg = svgEl("svg", {
       width: Math.round(width), height,
       viewBox: `0 0 ${Math.round(width)} ${height}`,
@@ -1606,8 +1659,7 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
         c + "¢"));
     }
 
-    const shown = D.levels.filter((m) => levelParts[m.level].card.open);
-    (shown.length ? shown : D.levels).forEach((m, i) => {
+    shown.forEach((m, i) => {
       const top = DG.padT + i * DG.band;
       const mid = top + DG.band / 2;
       const rows = D.bounds[m.level];
@@ -1662,10 +1714,30 @@ if (typeof module !== "undefined") module.exports = SAG;</script>
 
     DG.scroll.textContent = "";
     DG.scroll.appendChild(svg);
+    DG.scroll.classList.toggle("fits", width <= DG.scroll.clientWidth + 1);
   }
 
-  DG.zoom.addEventListener("input", drawDiagram);
-  DG.card.addEventListener("toggle", () => { if (DG.card.open) drawDiagram(); });
+  // the slider bottoms out at whatever fits the pane, so the widest view never scrolls
+  function fitZoom() {
+    const room = DG.scroll.clientWidth - DG.padL - 24;
+    return Math.max(2, Math.floor(room / DG_MAX_CENTS));
+  }
+  function syncZoomRange() {
+    const fit = fitZoom();
+    DG.zoom.min = String(fit);
+    if (Number(DG.zoom.value) < fit || !DG.zoomed) DG.zoom.value = String(fit);
+  }
+  DG.zoom.addEventListener("input", () => { DG.zoomed = true; drawDiagram(); });
+  DG.card.addEventListener("toggle", () => {
+    if (!DG.card.open) return;
+    syncZoomRange();
+    drawDiagram();
+  });
+  addEventListener("resize", () => {
+    if (!DG.card.open) return;
+    syncZoomRange();
+    drawDiagram();
+  });
 
   // ---------- wiring ----------
   for (const p of P) expInputs[p].addEventListener("input", onVectorInput);

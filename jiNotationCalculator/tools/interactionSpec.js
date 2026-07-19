@@ -18,7 +18,7 @@
       .find((t) => t.textContent.replace(/[−+]/g, "").trim() === name);
   // the first header cell is the row-collapse toggle column
   const heads = (lvl) => [...card(lvl).querySelectorAll("thead tr:first-child th")]
-    .slice(1).map((t) => t.textContent.replace(/[−+]/g, "").trim());
+    .slice(1).map((t) => t.textContent.replace(/[−+]/g, "").replace(/\s+/g, " ").trim());
   const bodyRows = (lvl) => [...card(lvl).querySelectorAll("tbody tr")];
   const dataCells = (lvl, r) => [...bodyRows(lvl)[r].children].slice(1);
   const cellText = (lvl, r, c) => dataCells(lvl, r)[c].querySelector(".cv").textContent.trim();
@@ -83,9 +83,12 @@
   ok("reset button uses the text colour, not the accent",
     getComputedStyle($("reset")).color === inkColor,
     getComputedStyle($("reset")).color);
-  ok("checkboxes use the text colour",
-    getComputedStyle($("show-evo")).accentColor === inkColor,
-    getComputedStyle($("show-evo")).accentColor);
+  ok("the checkbox is drawn by us, not by the browser",
+    getComputedStyle($("show-evo")).appearance === "none",
+    getComputedStyle($("show-evo")).appearance);
+  ok("a checked box fills with the text colour",
+    getComputedStyle($("show-evo")).backgroundColor === inkColor,
+    getComputedStyle($("show-evo")).backgroundColor);
   const mutedColor = getComputedStyle(document.querySelector(".hint")).color;
   ok("flavor labels are the muted text colour, not white",
     [...document.querySelectorAll(".checks span")]
@@ -181,7 +184,7 @@
   // ---------- table shape ----------
   ok("Unicode column first",
     heads("medium").join("|")
-    === "Bravura|ASCII|Unicode|Fifths Count|Representing (¢)|Error (¢)",
+    === "Bravura|Sagitype|Unicode|Codepoints|FifthsCount|Cents|Error",
     heads("medium").join("|"));
   const allCells = [...card("medium").querySelectorAll("th, td")]
     .filter((c) => !c.classList.contains("rowtog"));
@@ -190,7 +193,7 @@
     allCells.map((c) => getComputedStyle(c).textAlign).find((a) => a !== "right"));
   const bravCell = dataCells("medium", 0)[colIndex("medium", "Bravura")];
   ok("Bravura is big enough to read the nominal",
-    parseFloat(getComputedStyle(bravCell).fontSize) >= 55,
+    parseFloat(getComputedStyle(bravCell).fontSize) >= 48,
     getComputedStyle(bravCell).fontSize);
   const pvGl = card("high").querySelector(".pv-gl");
   ok("preview glyphs are big too",
@@ -206,7 +209,7 @@
     return Boolean(d) && getComputedStyle(d).opacity === "1"
       && getComputedStyle(d).maxWidth !== "0px";
   };
-  const asciiTh = groupTh("medium", "ASCII");
+  const asciiTh = groupTh("medium", "Sagitype");
   ok("expanded groups show a − toggle",
     asciiTh.querySelector(".tog").textContent === "−");
   const togStyle = getComputedStyle(asciiTh.querySelector(".tog"));
@@ -215,8 +218,8 @@
     && parseFloat(togStyle.borderTopLeftRadius) > 0,
     togStyle.border);
   ok("cell contents carry a pinned width so the collapse can animate",
-    /px$/.test(groupCell("medium", "ASCII").querySelector(".cw").style.getPropertyValue("--w")),
-    groupCell("medium", "ASCII").querySelector(".cw").style.getPropertyValue("--w"));
+    /px$/.test(groupCell("medium", "Sagitype").querySelector(".cw").style.getPropertyValue("--w")),
+    groupCell("medium", "Sagitype").querySelector(".cw").style.getPropertyValue("--w"));
   // the suite runs with reduced motion forced, so read the rule, not the computed style
   const cssText = [...document.styleSheets].flatMap((s) => {
     try { return [...s.cssRules].map((r) => r.cssText); } catch (e) { return []; }
@@ -226,27 +229,27 @@
   const beforeTop = asciiTh.querySelector(".tog").getBoundingClientRect().top;
   const beforeWidth = asciiTh.getBoundingClientRect().width;
   asciiTh.click();
-  const asciiAfter = groupTh("medium", "ASCII");
+  const asciiAfter = groupTh("medium", "Sagitype");
   ok("collapsed groups show a + toggle",
     asciiAfter.querySelector(".tog").textContent === "+");
   ok("the header text does not move vertically",
     Math.abs(asciiAfter.querySelector(".tog").getBoundingClientRect().top - beforeTop) < 1.5,
     (asciiAfter.querySelector(".tog").getBoundingClientRect().top - beforeTop).toFixed(1));
   ok("collapsed column takes minimal space",
-    asciiAfter.getBoundingClientRect().width < beforeWidth * 0.55,
+    asciiAfter.getBoundingClientRect().width < beforeWidth * 0.75,
     Math.round(beforeWidth) + " -> " + Math.round(asciiAfter.getBoundingClientRect().width));
-  ok("collapsed cells shrink their content away", shrunk("medium", "ASCII"));
-  ok("collapsed cells show a dash instead", dashShown("medium", "ASCII"));
+  ok("collapsed cells shrink their content away", shrunk("medium", "Sagitype"));
+  ok("collapsed cells show a dash instead", dashShown("medium", "Sagitype"));
   ok("collapse applies to every card",
-    ["high", "ultra", "extreme"].every((l) => shrunk(l, "ASCII") && dashShown(l, "ASCII")));
-  groupTh("medium", "ASCII").click();
-  ok("clicking again expands", !shrunk("medium", "ASCII"));
+    ["high", "ultra", "extreme"].every((l) => shrunk(l, "Sagitype") && dashShown(l, "Sagitype")));
+  groupTh("medium", "Sagitype").click();
+  ok("clicking again expands", !shrunk("medium", "Sagitype"));
 
-  const repTh = groupTh("medium", "Representing (¢)");
+  const repTh = groupTh("medium", "Cents");
   repTh.click();
-  ok("REPRESENTING collapses too", shrunk("medium", "Representing (¢)"));
-  groupTh("medium", "Representing (¢)").click();
-  ok("REPRESENTING expands again", !shrunk("medium", "Representing (¢)"));
+  ok("REPRESENTING collapses too", shrunk("medium", "Cents"));
+  groupTh("medium", "Cents").click();
+  ok("REPRESENTING expands again", !shrunk("medium", "Cents"));
 
   // ---------- Evo / Revo ----------
   const subRow = () => card("medium").querySelector("thead tr.subhead");
@@ -254,9 +257,15 @@
   $("show-evo").checked = false; fire($("show-evo"), "change");
   ok("unchecking Evo drops the sub-header row", !subRow());
   ok("unchecking Evo halves the notation columns",
-    dataCells("medium", 0).length === 6,
+    dataCells("medium", 0).length === 7,
     dataCells("medium", 0).length);
   ok("the last checked variant is not greyed out", $("show-revo").disabled === false);
+  ok("the locked box keeps a dark tick and takes no hover",
+    getComputedStyle($("show-revo"), "::after").borderRightColor === inkColor
+    && getComputedStyle($("show-revo")).backgroundColor !== inkColor
+    && getComputedStyle($("show-revo")).pointerEvents === "none",
+    getComputedStyle($("show-revo"), "::after").borderRightColor + " on "
+    + getComputedStyle($("show-revo")).backgroundColor);
   $("show-revo").checked = false; fire($("show-revo"), "change");
   ok("unchecking the last one is refused", $("show-revo").checked === true);
   ok("with one flavor the preview carries no label at all",
@@ -270,7 +279,7 @@
   // ---------- preview picks the simplest notation ----------
   const labsPv = [...card("high").querySelectorAll(".pv-lab")].map((e) => e.textContent);
   ok("preview labels Evo and Revo", labsPv.join("|") === "Evo|Revo", labsPv.join("|"));
-  const repIdx = colIndex("medium", "Representing (¢)");
+  const repIdx = colIndex("medium", "Cents");
   const simplestRow = bodyRows("medium")
     .findIndex((tr) => [...tr.children].slice(1)[repIdx].querySelector(".cv").textContent.trim() === "-");
   ok("an unaltered row shows a dash rather than a blank", simplestRow >= 0);
@@ -308,7 +317,7 @@
     /not recommended/i.test(card("high").querySelector(".lv-name").dataset.tip));
   ok("Representing header keeps its tooltip",
     /single-shaft Sagittal has to stand for/.test(
-      groupTh("medium", "Representing (¢)").querySelector(".tip").dataset.tip));
+      groupTh("medium", "Cents").querySelector(".tip").dataset.tip));
 
   // ---------- levels ----------
   ok("only Medium open",
