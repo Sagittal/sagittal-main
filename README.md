@@ -32,6 +32,32 @@ The `/docs` directory is a GitBook, so that's a totally separate thing.
 
 The remaining subdirectories (`/bravura`, `/scala`, `/wincompose`) simply contain data helpful to other applications.
 
+#### finishing a change inside a submodule
+
+This repo does not store a submodule's contents, only a note of which commit that folder should be at. Commit and push
+inside the submodule and this repo says nothing about it — until you look at `git status` here and find:
+
+```shell
+ M app
+```
+
+which is not a stray edit. It means the `/app` folder has moved past the commit recorded for it. So the last step of any
+change to a submodule is to record where it now is:
+
+```shell
+git -C app push          # from inside the submodule, as usual
+git add app              # from here, in sagittal-main
+git commit -m "Point at the app submodule's current commit"
+git push
+```
+
+Skip it and the recorded commit goes stale, which is how `/app` came to point at `faf0ed23` — a commit that had been
+amended away before it was ever pushed, so GitHub gave a 404 for it for years. Only record a commit you have pushed;
+recording a local-only one is exactly how that happens.
+
+When several people or agents are pushing to the same submodule at once, leave this until they have all landed —
+otherwise the number is stale again by the next push.
+
 ### per scripts submodule
 
 Run `npm i`. To see a list of available scripts, run `npm run`.
